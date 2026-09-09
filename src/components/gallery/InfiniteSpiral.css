@@ -1,0 +1,60 @@
+/*
+  InfiniteSpiral — React Bits component (JS-CSS variant).
+  Source:   https://reactbits.dev/components/infinite-spiral
+  Registry: https://reactbits.dev/r/InfiniteSpiral-JS-CSS.json
+
+  Vendored as-is from the registry. Project adaptation is limited to the card
+  surface below (border / background / shadow) so the frame reads in the
+  monochrome glass system — white / black / grey only, colour stays in the
+  artwork. The 3D helix math, motion and layout are unchanged from upstream.
+*/
+
+.infinite-spiral {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.infinite-spiral__stage {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+}
+
+.infinite-spiral__item {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: block;
+  width: var(--infinite-spiral-card-width);
+  height: var(--infinite-spiral-card-height);
+  overflow: hidden;
+  /* project: match the glass system instead of the upstream white-on-dark frame */
+  border: 1px solid rgba(10, 10, 10, 0.08);
+  border-radius: var(--infinite-spiral-card-radius);
+  background: rgba(255, 255, 255, 0.6);
+  box-shadow: 0 10px 30px rgba(10, 10, 10, 0.12);
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  will-change: transform, opacity, filter;
+  text-decoration: none;
+}
+
+.infinite-spiral__image {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-position: center;
+  user-select: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .infinite-spiral__item {
+    transition: none;
+  }
+}
