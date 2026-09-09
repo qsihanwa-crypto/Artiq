@@ -142,10 +142,18 @@ Admin (behind `auth:sanctum`, Bearer token — see [IMPLEMENTATION_GUIDE.md](IMP
 POST   /api/admin/login           → Get a token
 GET    /api/admin/artworks        → List all artworks (incl. soft-deleted)
 POST   /api/admin/artworks        → Create (multipart, supports image upload)
-PUT    /api/admin/artworks/{id}   → Update
-DELETE /api/admin/artworks/{id}   → Soft delete
-PUT    /api/admin/settings        → Update one setting: { key, value }
+PUT    /api/admin/artworks/{id}             → Update
+DELETE /api/admin/artworks/{id}             → Soft delete
+PATCH  /api/admin/artworks/{id}/availability → Mark sold / available (Catalogue admin page)
+PATCH  /api/admin/artworks/{id}/featured     → Toggle Home's Featured Artwork picks (Home admin page)
+PUT    /api/admin/settings                  → Update one setting: { key, value }
 ```
+The admin dashboard is organized one page per public page (Home, About,
+Catalogue, Cart & Checkout, Site-wide) rather than by table — see
+[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) Phase 10 for the mapping
+and the `site_settings` keys (`home_content`, `checkout_message`, etc.) each
+page reads and writes.
+
 Never add an admin-only mutation without `auth:sanctum` on the route — there is no other gate.
 
 ### Response Format

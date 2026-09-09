@@ -152,6 +152,12 @@ the admin dashboard):
 | `whatsapp_number` | string, digits only | `site.whatsapp` |
 | `social_links` | array of `{label, href, handle}` | `site.social` |
 | `nav_links` | array of `{label, to}` | `NAV_LINKS` |
+| `checkout_message` | `{greeting, signoff}`, with a `{artist_name}` placeholder substituted at send time | the hardcoded strings in `whatsappOrder.js` |
+| `home_content` | `{heroLines[3], heroSubtext, introHeadline1, introHeadline2, introBody, artistIntroParagraphs[]}` | the hardcoded JSX copy in `Home.jsx` |
+
+The last two exist so the **Home page** and the **Cart/checkout message** are
+editable from the admin dashboard too, not just the catalogue — see Phase 10's
+per-page admin layout.
 
 ### Step 2.2: `artworks` + `artwork_images`
 
@@ -180,6 +186,7 @@ Schema::create('artworks', function (Blueprint $table) {
     $table->string('technique')->nullable();
     $table->json('tags')->nullable();               // string[]
     $table->string('alt');
+    $table->boolean('featured')->default(false); // shows in Home's "Featured Artwork" grid
     $table->unsignedInteger('sort_order')->default(0);
     $table->timestamps();
     $table->softDeletes();
@@ -213,7 +220,7 @@ class Artwork extends Model
     protected $fillable = [
         'slug', 'title', 'medium', 'category', 'category_label', 'dimensions',
         'aspect', 'palette', 'description', 'features', 'price', 'available',
-        'materials', 'technique', 'tags', 'alt', 'sort_order',
+        'materials', 'technique', 'tags', 'alt', 'featured', 'sort_order',
     ];
 
     protected $casts = [
@@ -222,6 +229,7 @@ class Artwork extends Model
         'materials' => 'array',
         'tags'      => 'array',
         'available' => 'boolean',
+        'featured'  => 'boolean',
         'price'     => 'decimal:2',
     ];
 
@@ -436,14 +444,19 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Artwork;
+use Illuminate\Http\Request;
 
 class PublicArtworkController extends Controller
 {
-    // GET /api/artworks
-    public function index()
+    // GET /api/artworks               — full catalogue
+    // GET /api/artworks?featured=1    — just the Home page's featured picks
+    public function index(Request $request)
     {
-        return Artwork::with('images')->where('available', true)
-            ->orderBy('sort_order')->get();
+        $query = Artwork::with('images')->where('available', true);
+        if ($request->boolean('featured')) {
+            $query->where('featured', true);
+        }
+        return $query->orderBy('sort_order')->get();
     }
 
     // GET /api/artworks/{slug}
@@ -581,6 +594,18 @@ class ArtworkController extends Controller
         return response()->json($artwork);
     }
 
+    // PATCH /api/admin/artworks/{id}/featured — same idea, for the Home
+    // page's Featured Artwork checklist (Step 10.4). Its own tiny endpoint
+    // means that page never needs to fetch/resend the whole artwork record
+    // just to flip one flag.
+    public function toggleFeatured(Request $request, $id)
+    {
+        $data = $request->validate(['featured' => 'required|boolean']);
+        $artwork = Artwork::findOrFail($id);
+        $artwork->update($data);
+        return response()->json($artwork);
+    }
+
     public function deleteImage($artworkId, $imageId)
     {
         $image = ArtworkImage::where('artwork_id', $artworkId)->findOrFail($imageId);
@@ -608,6 +633,7 @@ class ArtworkController extends Controller
             'technique' => 'nullable|string',
             'tags' => 'nullable|array',
             'alt' => 'required|string|max:255',
+            'featured' => 'boolean',
             'sort_order' => 'nullable|integer',
         ]);
     }
@@ -707,6 +733,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
 
     Route::apiResource('artworks', AdminArtworkController::class);
     Route::patch('/artworks/{id}/availability', [AdminArtworkController::class, 'toggleAvailability']);
+    Route::patch('/artworks/{id}/featured', [AdminArtworkController::class, 'toggleFeatured']);
     Route::delete('/artworks/{artwork}/images/{image}', [AdminArtworkController::class, 'deleteImage']);
 
     Route::get('/settings', [AdminSettingController::class, 'index']);
@@ -772,6 +799,22 @@ class SiteSettingSeeder extends Seeder
             ['label' => 'Home', 'to' => '/'],
             ['label' => 'About', 'to' => '/about'],
             ['label' => 'Artwork', 'to' => '/catalogue'],
+        ]);
+        SiteSetting::set('checkout_message', [
+            'greeting' => "Hi {artist_name}, I'd like to order the following:",
+            'signoff' => "Sent from {artist_name}'s catalogue",
+        ]);
+        // Copied from the hardcoded JSX in src/pages/Home.jsx — see Step 9.6.
+        SiteSetting::set('home_content', [
+            'heroLines' => ['EVERY PIECE', 'MADE', 'BY HAND.'],
+            'heroSubtext' => 'Twenty years of painting, wood-burning and carving by {artist_name} — an independent artist in {location}. Everything here is an original, made by one pair of hands.',
+            'introHeadline1' => 'EVERYONE SEES THE WORLD DIFFERENTLY.',
+            'introHeadline2' => 'THIS IS HOW I SEE MINE.',
+            'introBody' => "I'm Kirtanraw. Twenty years in, I'm still making the same things I always have — Hanuman and Ganesha, tigers and owls, old cars, the odd line worth remembering. Different subjects, the same slow and careful way of working.",
+            'artistIntroParagraphs' => [
+                "I've painted for about twenty years, and by now I work in wood just as much — burning and carving as well as brushing. Sacred figures, animals, cars, lettering: if it holds my attention, I'll make it.",
+                "I was diagnosed with Asperger's. Mostly it means I can sit with one piece for hours and not notice the time. Whatever leaves the bench, I want it to be the best I can do — that matters to me more than anything. There's more on the about page.",
+            ],
         ]);
     }
 }
@@ -936,14 +979,19 @@ export const useSettings = () => useContext(SettingsContext);
 Wrap `<App />` with `<SettingsProvider>` in `main.jsx`.
 
 ### Step 9.3: Update `whatsappOrder.js`
-It currently imports the static `site` object. Change it to accept settings
-as an argument instead, so the WhatsApp number is always the live value from
-the database:
+It currently imports the static `site` object and hardcodes the greeting/
+sign-off text. Change it to accept settings as an argument, and pull the
+message wording from `settings.checkout_message` (Phase 2.1) so the **entire
+Cart checkout message — number, greeting, and sign-off — is editable from
+admin, not just the number**:
 ```javascript
 import { formatPrice } from './formatPrice';
 
+const fill = (template, settings) => template.replace('{artist_name}', settings.artist_name);
+
 export function buildOrderMessage(items, settings) {
-  const lines = [`Hi ${settings.artist_name}, I'd like to order the following:`, ''];
+  const { greeting, signoff } = settings.checkout_message;
+  const lines = [fill(greeting, settings), ''];
   items.forEach((it, i) => {
     lines.push(`${i + 1}. ${it.title}`);
     lines.push(`   ${it.medium} · ${it.dimensions}`);
@@ -953,7 +1001,7 @@ export function buildOrderMessage(items, settings) {
   const total = items.reduce((sum, it) => sum + (Number(it.price) || 0), 0);
   lines.push(`Order total: ${formatPrice(total)} for ${items.length} ${items.length === 1 ? 'piece' : 'pieces'}`);
   lines.push('');
-  lines.push(`Sent from ${settings.artist_name}'s catalogue`);
+  lines.push(fill(signoff, settings));
   return lines.join('\n');
 }
 
@@ -962,6 +1010,8 @@ export function buildWhatsappUrl(items, settings) {
   return `https://wa.me/${number}?text=${encodeURIComponent(buildOrderMessage(items, settings))}`;
 }
 ```
+Seed `checkout_message` in `SiteSettingSeeder` (Phase 7.2) with the original
+copy: `{"greeting": "Hi {artist_name}, I'd like to order the following:", "signoff": "Sent from {artist_name}'s catalogue"}`.
 Update `Cart.jsx` to call `const settings = useSettings()` and pass it into
 both functions.
 
@@ -991,14 +1041,55 @@ About and Home pages.
 VITE_API_URL=http://localhost:8000
 ```
 
+### Step 9.6: Wire Home.jsx to `home_content` and `featured`
+`Home.jsx` currently hardcodes the hero headline, subtext, intro statement,
+and artist-intro paragraphs as JSX text, and picks "Featured Artwork" with
+`showcase.slice(0, 6)`. Replace both with data from the API so the Home page
+in the admin dashboard (Phase 10.5) actually controls what renders:
+```jsx
+const settings = useSettings(); // has .home_content
+const { artworks } = useArtworks({ featured: true }); // GET /api/artworks?featured=1
+```
+Swap `HERO_FRAGMENTS`/hardcoded strings for `settings.home_content.heroLines`,
+`.heroSubtext` (with `{artist_name}`/`{location}` replaced the same way as
+Step 9.3), `.introHeadline1/2`, `.introBody`, and `.artistIntroParagraphs`.
+`FEATURED_ARTWORKS` becomes the `artworks` array from the featured-filtered
+hook call instead of a hardcoded slice. The InfiniteSpiral showcase (non-
+spiritual pieces, filtered by `category` — already an editable field on every
+artwork) keeps its existing filter logic rather than getting its own setting;
+the "How I See" cards get their own admin screen instead (Step 10.4).
+
 ---
 
-## Phase 10: Build the Admin Dashboard From Scratch (2-3 hours)
+## Phase 10: Build the Admin Dashboard From Scratch (3-4 hours)
 
 No Nova, no Filament — Filament is free but ties the admin UI to Blade and
 Livewire, a second frontend framework on top of the React one already in this
 repo. A small hand-built React admin is less total surface area for one
 developer to maintain and reuses everything already known here.
+
+### The dashboard mirrors the public site, one admin page per page the visitor sees
+
+Instead of organizing the dashboard by database table, organize it the way
+the artist thinks about the site: "the Home page," "the About page," "the
+catalogue," "the Cart." Each row below is one item in the admin sidebar:
+
+| Public page(s) | Admin page | Route | Edits |
+|---|---|---|---|
+| `/` Home | **Home** | `/admin/home` | Hero headline/subtext, intro statement, artist-intro paragraphs, Featured Artwork picks, "How I See" cards |
+| `/about` | **About** | `/admin/about` | Process steps, "What steadies the work" cards |
+| `/catalogue` + `/artwork/:id` | **Catalogue** | `/admin/catalogue` | The artwork list, add/edit/mark-sold/delete — see note below |
+| `/cart` | **Cart & Checkout** | `/admin/cart` | WhatsApp number, order message greeting/sign-off |
+| Header + footer on *every* page | **Site-wide** | `/admin/site` | Artist name, tagline, location, currency, social links, nav links |
+
+Two things deliberately don't get their own sidebar item:
+- **Artwork Detail (`/artwork/:id`)** isn't a separate admin page — it just
+  renders one `Artwork` record in full. Editing that record from the
+  Catalogue page *is* editing the detail page; a second editor for the same
+  row would just be two places that can drift out of sync.
+- **Site-wide** doesn't correspond to one public route because the header
+  and footer render on all of them. It's grouped on its own page instead of
+  bolted onto Home or About so it's obvious it's shared, not page-specific.
 
 ### Step 10.1: Admin API Client & Auth Context
 `frontend/src/admin/api.js`:
@@ -1066,21 +1157,77 @@ export function RequireAuth({ children }) {
 }
 ```
 
-### Step 10.2: Routes
+### Step 10.2: Routes and the Page-Mirrored Sidebar
 Add to `App.jsx` (or a dedicated `AdminApp.jsx` mounted at `/admin/*`):
 ```jsx
 <Route path="/admin/login" element={<AdminLogin />} />
 <Route path="/admin" element={<RequireAuth><AdminLayout /></RequireAuth>}>
-  <Route index element={<AdminArtworkList />} />
-  <Route path="artworks/new" element={<AdminArtworkForm />} />
-  <Route path="artworks/:id" element={<AdminArtworkForm />} />
-  <Route path="settings" element={<AdminSettings />} />
+  <Route index element={<Navigate to="home" replace />} />
+  <Route path="home" element={<AdminHome />} />
   <Route path="about" element={<AdminAbout />} />
+  <Route path="catalogue" element={<AdminArtworkList />} />
+  <Route path="catalogue/new" element={<AdminArtworkForm />} />
+  <Route path="catalogue/:id" element={<AdminArtworkForm />} />
+  <Route path="cart" element={<AdminCart />} />
+  <Route path="site" element={<AdminSite />} />
 </Route>
 ```
-`/admin` is not in `NAV_LINKS` — reach it by typing the URL directly. That's
-sufficient access control for a single-owner site (real gatekeeping is the
-Sanctum token, not obscurity).
+`/admin` is not in the public `NAV_LINKS` — reach it by typing the URL
+directly. That's sufficient access control for a single-owner site (real
+gatekeeping is the Sanctum token, not obscurity).
+
+`frontend/src/admin/AdminLayout.jsx` — the sidebar reads exactly like the
+table above, so the mental model of "one admin page per site page" is visible
+every time it's used:
+```jsx
+import { NavLink, Outlet } from 'react-router-dom';
+import { useAdminAuth } from './AdminAuthContext';
+import { adminFetch } from './api';
+
+const PAGES = [
+  { to: '/admin/home', label: 'Home' },
+  { to: '/admin/about', label: 'About' },
+  { to: '/admin/catalogue', label: 'Catalogue' },
+  { to: '/admin/cart', label: 'Cart & Checkout' },
+  { to: '/admin/site', label: 'Site-wide' },
+];
+
+export default function AdminLayout() {
+  const { setAuthed } = useAdminAuth();
+
+  const handleLogout = async () => {
+    await adminFetch('/logout', { method: 'POST' }).catch(() => {});
+    localStorage.removeItem('admin_token');
+    setAuthed(false);
+  };
+
+  return (
+    <div className="flex min-h-screen">
+      <nav className="w-56 shrink-0 border-r border-neutral-200 p-6">
+        <p className="mb-6 text-xs font-semibold uppercase tracking-wide text-neutral-500">Pages</p>
+        <ul className="space-y-1">
+          {PAGES.map((p) => (
+            <li key={p.to}>
+              <NavLink
+                to={p.to}
+                className={({ isActive }) =>
+                  `block rounded px-3 py-2 text-sm ${isActive ? 'bg-ink text-white' : 'text-neutral-700 hover:bg-neutral-100'}`
+                }
+              >
+                {p.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+        <button onClick={handleLogout} className="mt-8 text-sm text-neutral-500 hover:text-ink">
+          Log out
+        </button>
+      </nav>
+      <main className="flex-1 p-8"><Outlet /></main>
+    </div>
+  );
+}
+```
 
 ### Step 10.3: Login Page
 `frontend/src/admin/AdminLogin.jsx`:
@@ -1126,7 +1273,47 @@ export default function AdminLogin() {
 }
 ```
 
-### Step 10.4: Artwork List + Form
+### Step 10.4: The Home Page
+
+`AdminHome.jsx` is the direct admin counterpart of `src/pages/Home.jsx`. It
+edits the `home_content` setting from Phase 2.1 plus which artworks are
+featured:
+```jsx
+const [content, setContent] = useState(null);
+const [artworks, setArtworks] = useState([]);
+
+useEffect(() => {
+  adminFetch('/settings').then((s) => setContent(s.home_content));
+  adminFetch('/artworks').then(setArtworks);
+}, []);
+
+const saveContent = () =>
+  adminFetch('/settings', { method: 'PUT', body: JSON.stringify({ key: 'home_content', value: content }) });
+
+const toggleFeatured = async (artwork) => {
+  const updated = await adminFetch(`/artworks/${artwork.id}/featured`, {
+    method: 'PATCH',
+    body: JSON.stringify({ featured: !artwork.featured }),
+  });
+  setArtworks((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+};
+```
+Render one text input/textarea per field of `content` (the three hero
+headline lines, hero subtext, both intro headline lines, intro body, and a
+repeatable list for the artist-intro paragraphs), a single "Save" button
+calling `saveContent`, and below it a checklist of every artwork with a
+checkbox bound to `featured` — checking a box is how the artist controls
+what shows in Home's "Featured Artwork" grid, no code change needed. Put the
+"How I See" cards editor on this page too (same CRUD pattern as About's
+process steps, Step 10.5) since that section belongs to Home, not About.
+
+### Step 10.5: The About Page
+
+`AdminAbout.jsx` — list + inline-edit rows for `process_steps` and
+`steady_items` (Phase 2.3), same CRUD pattern as the Catalogue page below,
+referencing artworks by a `<select>` populated from `adminFetch('/artworks')`.
+
+### Step 10.6: The Catalogue Page (List + Form)
 
 `AdminArtworkList.jsx`: `adminFetch('/artworks')` on mount, render a table
 (thumbnail, title, price, a **Sold / Available badge**, edit/delete links)
@@ -1174,29 +1361,41 @@ Show existing images with a delete (×) button calling
 `adminFetch(`/artworks/${id}/images/${imageId}`, { method: 'DELETE' })`.
 This full form is for adding a new piece or fixing details on an existing
 one — for the common day-to-day case of "this one sold," use the quick
-**Mark as Sold** button on the list (Step 10.4 above) instead.
+**Mark as Sold** button on the list above instead.
 
-### Step 10.5: Settings Page
-`AdminSettings.jsx` fetches `adminFetch('/settings')` and renders one field
-per key — a plain text input for `whatsapp_number`, `artist_name`, `tagline`,
-`location`, `currency`, and a small repeatable-row editor for `social_links`
-and `nav_links` (add row / remove row / edit label+href). Each field's "Save"
-button calls:
+### Step 10.7: The Cart & Checkout Page
+
+`AdminCart.jsx` is the admin counterpart of `src/pages/Cart.jsx` — everything
+a customer sees between clicking "Check out on WhatsApp" and the message
+landing in the artist's phone. It edits two settings keys: `whatsapp_number`
+(a single text input, digits only) and `checkout_message` (two textareas,
+`greeting` and `signoff`, with a hint that `{artist_name}` gets substituted).
+Same save pattern as the other settings-backed pages:
 ```javascript
-await adminFetch('/settings', { method: 'PUT', body: JSON.stringify({ key, value }) });
+await adminFetch('/settings', { method: 'PUT', body: JSON.stringify({ key: 'whatsapp_number', value }) });
+await adminFetch('/settings', { method: 'PUT', body: JSON.stringify({ key: 'checkout_message', value: { greeting, signoff } }) });
 ```
-This is the screen where the artist changes the WhatsApp order number
-whenever it changes — no code deploy required.
+**This is the page for "the WhatsApp number changed"** — the single most
+common edit this dashboard exists for. Show a live preview of the built
+message (reuse `buildOrderMessage` from `whatsappOrder.js` with one dummy
+line item) so the artist can see exactly what a customer's message will look
+like before saving.
 
-### Step 10.6: About Content Page
-`AdminAbout.jsx` — list + inline-edit rows for process steps and steady
-items, same CRUD pattern as artworks, referencing artworks by a `<select>`
-populated from `adminFetch('/artworks')`.
+### Step 10.8: The Site-wide Page
 
-### Step 10.7: Change Password
-Add a small form on the admin dashboard (e.g. in a settings sub-tab) that
-calls `PUT /api/admin/password` from Phase 3.2. Use it immediately after
-first login to replace the seeded `change-me-immediately` password.
+`AdminSite.jsx` covers everything that renders on *every* public page via
+the header/footer, not just one: `artist_name`, `tagline`, `location`,
+`currency`, and repeatable-row editors for `social_links` (label + href +
+handle) and `nav_links` (label + path) — add row / remove row / edit
+in place. Same `PUT /api/admin/settings` save pattern as Step 10.7.
+
+Put the **change password** form here too (Step 10.9) — it's account
+settings, not content tied to any one public page.
+
+### Step 10.9: Change Password
+Add a small form on the Site-wide page that calls `PUT /api/admin/password`
+from Phase 3.2. Use it immediately after first login to replace the seeded
+`change-me-immediately` password.
 
 ---
 
@@ -1213,7 +1412,7 @@ cd frontend && npm run dev             # http://localhost:5173
 Checklist:
 1. `http://localhost:5173` shows real artworks from the database.
 2. `http://localhost:5173/admin/login` → sign in with the seeded admin user.
-3. Edit the WhatsApp number in Admin → Settings, save.
+3. Edit the WhatsApp number in Admin → Cart & Checkout, save.
 4. Add an item to the cart on the public site and check out — the WhatsApp
    link opens with the **new** number, with no redeploy.
 5. Browser console (F12) — no errors, network tab shows calls to
@@ -1294,9 +1493,10 @@ php artisan route:list --path=api
 - [ ] Real catalogue imported from `src/data/*.js` (not placeholder rows)
 - [ ] React frontend reads artworks/settings/about from the API, not static files
 - [ ] `whatsappOrder.js` uses the live `whatsapp_number` setting, not a hardcoded value
-- [ ] Admin dashboard built: login, artwork CRUD with image upload, settings editor, about editor
+- [ ] Admin dashboard built with one page per public page: Home, About, Catalogue, Cart & Checkout, Site-wide, plus login and change-password
 - [ ] Admin can add a new artwork with photos, and mark a sold piece off the catalogue with one click (without deleting its record)
-- [ ] Changing the WhatsApp number in the dashboard changes the live checkout link with no deploy
+- [ ] Admin can pick which artworks show in Home's Featured Artwork grid and edit the Home page's headline/intro copy
+- [ ] Changing the WhatsApp number or checkout message on the Cart & Checkout page changes the live checkout link/message with no deploy
 - [ ] Both frontend and backend running locally, no console errors
 - [ ] Deployment plan accounts for persistent image storage (no S3, no ephemeral filesystem)
 
