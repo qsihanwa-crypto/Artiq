@@ -112,30 +112,41 @@ Test with:
 - **Primary key:** `id` (auto-incrementing)
 - **Timestamps:** Always include `created_at`, `updated_at` (Laravel handles automatically)
 - **Foreign keys:** Singular `artist_id` not `artists_id`
-- **Soft deletes:** Use `SoftDeletes` trait for artworks/galleries (don't hard-delete)
-- **Image paths:** Store as URLs or relative paths, never absolute file paths
+- **Soft deletes:** Use `SoftDeletes` trait for artworks (don't hard-delete)
+- **Image paths:** Store as URLs or relative paths (`/storage/...`), never absolute file paths
 
-**Essential tables:**
-- `artists` (id, name, bio, social_links JSON)
-- `artworks` (id, artist_id, title, description, image_url, medium, price, created_at, updated_at)
-- `galleries` (id, name, description, created_at, updated_at)
-- `gallery_artwork` (gallery_id, artwork_id) [pivot table]
+**Essential tables** (see [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) Phase 2 for full migrations):
+- `site_settings` (id, key UNIQUE, value JSON) — flexible key/value store for everything that isn't an artwork: artist name, tagline, location, currency, **WhatsApp order number**, social links, nav links. Add new content here first before reaching for a new column/table.
+- `artworks` (id, slug, title, medium, category, category_label, dimensions, aspect, palette JSON, description, features JSON, price, available, materials JSON, technique, tags JSON, alt, sort_order) + soft deletes
+- `artwork_images` (id, artwork_id, path, sort_order) — one row per photo, uploaded via the admin dashboard
+- `process_steps` / `steady_items` (About page content) and `how_i_see_pieces` (Home page content) — each references an `artwork_id`
+- `users` (Laravel default) + Sanctum's `personal_access_tokens` — single admin login, no roles/permissions needed
 
 ---
 
 ## API Conventions
 
 ### Endpoint Structure
-```
-GET    /api/artworks              → List all artworks
-GET    /api/artworks/{id}         → Get single artwork
-POST   /api/artworks              → Create (admin only)
-PUT    /api/artworks/{id}         → Update (admin only)
-DELETE /api/artworks/{id}         → Delete (admin only)
 
-GET    /api/artist                → Get artist bio
-PUT    /api/artist                → Update bio (admin only)
+Public (no auth):
 ```
+GET    /api/artworks              → List available artworks
+GET    /api/artworks/{slug}       → Get single artwork
+GET    /api/settings              → All site settings (name, tagline, socials, WhatsApp number, ...)
+GET    /api/about                 → Process steps + steady items
+GET    /api/how-i-see             → Home page "How I See" pieces
+```
+
+Admin (behind `auth:sanctum`, Bearer token — see [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) Phases 3 & 5):
+```
+POST   /api/admin/login           → Get a token
+GET    /api/admin/artworks        → List all artworks (incl. soft-deleted)
+POST   /api/admin/artworks        → Create (multipart, supports image upload)
+PUT    /api/admin/artworks/{id}   → Update
+DELETE /api/admin/artworks/{id}   → Soft delete
+PUT    /api/admin/settings        → Update one setting: { key, value }
+```
+Never add an admin-only mutation without `auth:sanctum` on the route — there is no other gate.
 
 ### Response Format
 **Success (200):**

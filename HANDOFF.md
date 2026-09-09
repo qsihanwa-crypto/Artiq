@@ -8,8 +8,8 @@
 
 **Tech Stack:**
 - **Frontend:** React 18 + Vite + React Router + Tailwind CSS + Three.js (3D) + GSAP animations
-- **Backend:** Laravel (to be built) with MySQL/PostgreSQL
-- **Admin UI:** Laravel Nova or Filament (for artist to manage content)
+- **Backend:** Laravel (to be built) with MySQL
+- **Admin UI:** A small custom React admin dashboard (built from scratch, no Nova/Filament — no budget for a paid package), authenticated with Laravel Sanctum. Every piece of content is editable there, including the WhatsApp order number.
 
 ---
 
@@ -281,8 +281,8 @@ React renders data
 5. **Create migrations** (define database schema)
 6. **Build API endpoints** (GET /artworks, GET /artworks/:id, GET /artist, etc.)
 7. **Connect React frontend** to backend API (replace mock data)
-8. **Set up admin panel** (Laravel Nova or Filament)
-9. **Test end-to-end** (add artwork in admin, see it on frontend)
+8. **Build the admin dashboard from scratch** (React + Laravel Sanctum — see IMPLEMENTATION_GUIDE.md Phase 10)
+9. **Test end-to-end** (edit the WhatsApp number and an artwork in admin, see both update on the live site)
 10. **Deploy** (backend to hosting, frontend to Vercel/Netlify)
 
 ---
@@ -363,7 +363,7 @@ php artisan migrate
 - **React Docs:** https://react.dev
 - **Tailwind CSS:** https://tailwindcss.com/docs
 - **Three.js + React Three Fiber:** https://docs.pmnd.rs/react-three-fiber/
-- **Laravel Nova (Admin UI):** https://nova.laravel.com/docs
+- **Laravel Sanctum (Admin Auth):** https://laravel.com/docs/sanctum
 
 ---
 
@@ -383,10 +383,12 @@ If stuck:
 - [ ] Backend deployed (Heroku, DigitalOcean, AWS, etc.)
 - [ ] Frontend environment variable set (API_URL points to live backend)
 - [ ] Frontend deployed (Vercel, Netlify, etc.)
-- [ ] Admin panel accessible (Nova/Filament at `/admin`)
+- [ ] Admin dashboard accessible at `/admin` (custom React app, Sanctum-protected)
+- [ ] Admin's default seeded password changed
 - [ ] Database backups configured
+- [ ] Uploaded artwork image storage is on a **persistent** disk/volume (not an ephemeral filesystem like Heroku dynos) and included in backups
 - [ ] SSL/HTTPS enabled
-- [ ] Real content uploaded (artworks, bio, links)
+- [ ] Real content confirmed in admin (artworks, bio, links, and the real WhatsApp number — not the placeholder)
 
 ---
 
