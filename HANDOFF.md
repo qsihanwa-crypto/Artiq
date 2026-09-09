@@ -351,7 +351,13 @@ php artisan migrate
 
 ---
 
-## 📚 Learning Resources
+## 📚 Project Documents
+
+- **[IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md)** — Detailed step-by-step walkthrough of building the entire backend (models, migrations, controllers, routes) and connecting React frontend. **Start here after environment setup.**
+- **[MYSQL_SETUP.md](MYSQL_SETUP.md)** — Quick reference for MySQL installation and configuration
+- **[CLAUDE.md](CLAUDE.md)** — Code style, accessibility, and development guidelines
+
+## 📖 External Learning Resources
 
 - **Laravel Docs:** https://laravel.com/docs
 - **React Docs:** https://react.dev
