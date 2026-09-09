@@ -569,6 +569,18 @@ class ArtworkController extends Controller
         return response()->json(null, 204);
     }
 
+    // PATCH /api/admin/artworks/{id}/availability — one-click "Mark Sold" /
+    // "Mark Available" from the list view. Separate from update() so the
+    // artist can flip this from a list row without opening the full edit
+    // form and re-sending every field.
+    public function toggleAvailability(Request $request, $id)
+    {
+        $data = $request->validate(['available' => 'required|boolean']);
+        $artwork = Artwork::findOrFail($id);
+        $artwork->update($data);
+        return response()->json($artwork);
+    }
+
     public function deleteImage($artworkId, $imageId)
     {
         $image = ArtworkImage::where('artwork_id', $artworkId)->findOrFail($imageId);
@@ -694,6 +706,7 @@ Route::middleware('auth:sanctum')->prefix('admin')->group(function () {
     Route::put('/password', [AuthController::class, 'updatePassword']);
 
     Route::apiResource('artworks', AdminArtworkController::class);
+    Route::patch('/artworks/{id}/availability', [AdminArtworkController::class, 'toggleAvailability']);
     Route::delete('/artworks/{artwork}/images/{image}', [AdminArtworkController::class, 'deleteImage']);
 
     Route::get('/settings', [AdminSettingController::class, 'index']);
@@ -1114,23 +1127,54 @@ export default function AdminLogin() {
 ```
 
 ### Step 10.4: Artwork List + Form
-- `AdminArtworkList.jsx`: `adminFetch('/artworks')` on mount, render a table
-  (title, price, available toggle, edit/delete links), a "New artwork" button.
-- `AdminArtworkForm.jsx`: plain HTML form fields for every column in Phase
-  2.2's migration (title, medium, category, price, description, features/materials/tags
-  as one-per-line textareas split on `\n` before submit, `available` checkbox),
-  plus `<input type="file" multiple accept="image/*">` for new images. On
-  submit, build a `FormData` (required for file uploads) and
-  `adminFetch('/artworks' or '/artworks/{id}', { method: 'POST', body: formData })`
-  — Laravel's `apiResource` update route needs `_method=PUT` appended to the
-  FormData when uploading files, since HTML forms can't send real PUT with
-  multipart bodies:
-  ```javascript
-  formData.append('_method', 'PUT');
-  await adminFetch(`/artworks/${id}`, { method: 'POST', body: formData });
-  ```
-  Show existing images with a delete (×) button calling
-  `adminFetch(`/artworks/${id}/images/${imageId}`, { method: 'DELETE' })`.
+
+`AdminArtworkList.jsx`: `adminFetch('/artworks')` on mount, render a table
+(thumbnail, title, price, a **Sold / Available badge**, edit/delete links)
+plus a prominent "New artwork" button that links to `artworks/new`.
+
+Each row gets a one-click status button that calls the dedicated endpoint
+from Phase 5 — no need to open the edit form just to mark something sold:
+```jsx
+async function toggleSold(artwork) {
+  const updated = await adminFetch(`/artworks/${artwork.id}/availability`, {
+    method: 'PATCH',
+    body: JSON.stringify({ available: !artwork.available }),
+  });
+  setArtworks((prev) => prev.map((a) => (a.id === updated.id ? updated : a)));
+}
+```
+```jsx
+<button onClick={() => toggleSold(artwork)}>
+  {artwork.available ? 'Mark as Sold' : 'Mark as Available'}
+</button>
+```
+Marking a piece sold sets `available = false`, which the public API already
+filters out (Phase 4's `where('available', true)`) — the piece disappears
+from the live catalogue immediately, no redeploy, and stays in the database
+so it can be relisted later by clicking "Mark as Available" again. Use
+**Delete** only for pieces that should be permanently removed (e.g. added by
+mistake); use **Mark as Sold** for anything that actually sold.
+
+`AdminArtworkForm.jsx`: used for both **adding a brand-new artwork with its
+photos** and editing an existing one. Plain HTML form fields for every column
+in Phase 2.2's migration (title, medium, category, price, description,
+features/materials/tags as one-per-line textareas split on `\n` before
+submit, an "Available for sale (uncheck if sold)" checkbox for `available`),
+plus `<input type="file" multiple accept="image/*">` for new images. On
+submit, build a `FormData` (required for file uploads) and
+`adminFetch('/artworks' or '/artworks/{id}', { method: 'POST', body: formData })`
+— Laravel's `apiResource` update route needs `_method=PUT` appended to the
+FormData when uploading files, since HTML forms can't send real PUT with
+multipart bodies:
+```javascript
+formData.append('_method', 'PUT');
+await adminFetch(`/artworks/${id}`, { method: 'POST', body: formData });
+```
+Show existing images with a delete (×) button calling
+`adminFetch(`/artworks/${id}/images/${imageId}`, { method: 'DELETE' })`.
+This full form is for adding a new piece or fixing details on an existing
+one — for the common day-to-day case of "this one sold," use the quick
+**Mark as Sold** button on the list (Step 10.4 above) instead.
 
 ### Step 10.5: Settings Page
 `AdminSettings.jsx` fetches `adminFetch('/settings')` and renders one field
@@ -1251,6 +1295,7 @@ php artisan route:list --path=api
 - [ ] React frontend reads artworks/settings/about from the API, not static files
 - [ ] `whatsappOrder.js` uses the live `whatsapp_number` setting, not a hardcoded value
 - [ ] Admin dashboard built: login, artwork CRUD with image upload, settings editor, about editor
+- [ ] Admin can add a new artwork with photos, and mark a sold piece off the catalogue with one click (without deleting its record)
 - [ ] Changing the WhatsApp number in the dashboard changes the live checkout link with no deploy
 - [ ] Both frontend and backend running locally, no console errors
 - [ ] Deployment plan accounts for persistent image storage (no S3, no ephemeral filesystem)
