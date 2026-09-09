@@ -1,5 +1,7 @@
 # Development Guidelines: KirtanRaw Gallery
 
+**Getting started?** See [IMPLEMENTATION_GUIDE.md](IMPLEMENTATION_GUIDE.md) for a step-by-step walkthrough of building the backend and connecting the frontend.
+
 ## Code Style & Conventions
 
 ### React (Frontend)
