@@ -1,8 +1,6 @@
 import { useLayoutEffect, useRef } from 'react'
 import gsap from 'gsap'
-import { site } from '../data/site'
 import kirtanrawPortrait from '../assets/images/kirtanraw-portrait.jpg'
-import { processSteps, steadyItems } from '../data/about'
 import SectionHeading from '../components/common/SectionHeading'
 import AnimatedText from '../components/common/AnimatedText'
 import Button from '../components/buttons/Button'
@@ -11,14 +9,20 @@ import ProcessThread from '../components/about/ProcessThread'
 import SteadyCard from '../components/about/SteadyCard'
 import { revealOnScroll } from '../animations/scrollAnimations'
 import { useReducedMotion } from '../hooks/useReducedMotion'
+import { useGalleryContent } from '../hooks/useGalleryContent'
 
 export default function About() {
+  const { processSteps, steadyItems, loading, error } = useGalleryContent()
+
+  if (loading) return <div className="px-6 pt-40 text-center text-neutral-600 sm:px-10">Loading about page...</div>
+  if (error) return <div className="px-6 pt-40 text-center text-neutral-600 sm:px-10">The about page could not be loaded right now.</div>
+
   return (
     <div className="pt-32 sm:pt-40">
       <MeetSection />
       <StorySection />
-      <LifeAndArt />
-      <ProcessSection />
+      <LifeAndArt steadyItems={steadyItems} />
+      <ProcessSection processSteps={processSteps} />
       <ClosingStatement />
     </div>
   )
@@ -30,10 +34,10 @@ function MeetSection() {
       <div className="mx-auto max-w-4xl text-center">
         <span className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">About</span>
         <h1 className="mt-4 font-display text-5xl font-semibold tracking-tight text-ink sm:text-6xl md:text-7xl">
-          Meet {site.artistName}
+          Meet Kirtanraw
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-lg text-neutral-600">
-          Twenty years of acrylic and oil paint, wood-burning and carving — working on my own, in {site.location}.
+          Twenty years of acrylic and oil paint, wood-burning and carving — working on my own, in Kuala Lumpur, Malaysia.
         </p>
       </div>
       <div className="mx-auto mt-14 max-w-3xl overflow-hidden rounded-3xl bg-neutral-100">
@@ -86,7 +90,7 @@ function StorySection() {
   )
 }
 
-function LifeAndArt() {
+function LifeAndArt({ steadyItems }) {
   const ref = useRef(null)
   const reduced = useReducedMotion()
 
@@ -111,7 +115,7 @@ function LifeAndArt() {
   )
 }
 
-function ProcessSection() {
+function ProcessSection({ processSteps }) {
   return (
     <section className="relative px-6 py-24 sm:px-10">
       <div className="mx-auto max-w-5xl">

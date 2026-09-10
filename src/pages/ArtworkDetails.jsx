@@ -2,15 +2,16 @@ import { useLayoutEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import gsap from 'gsap'
 import { ArrowLeft, ArrowRight, ArrowUpLeft } from 'lucide-react'
-import { getArtworkById, getAdjacentArtwork } from '../data/artworks'
 import { formatPrice } from '../utils/formatPrice'
 import Button from '../components/buttons/Button'
 import AddToCartButton from '../components/cart/AddToCartButton'
 import { useReducedMotion } from '../hooks/useReducedMotion'
+import { useArtworks } from '../hooks/useArtwork'
 
 export default function ArtworkDetails() {
   const { id } = useParams()
-  const artwork = getArtworkById(id)
+  const { artworks, loading, error } = useArtworks()
+  const artwork = artworks.find((item) => item.id === String(id))
   const ref = useRef(null)
   const reduced = useReducedMotion()
   const [active, setActive] = useState(0)
@@ -32,7 +33,11 @@ export default function ArtworkDetails() {
     return () => ctx.revert()
   }, [artwork, reduced, id])
 
-  if (!artwork) {
+  if (loading) {
+    return <div className="px-6 pt-40 text-center text-neutral-600 sm:px-10">Loading artwork...</div>
+  }
+
+  if (error || !artwork) {
     return (
       <div className="px-6 pt-40 text-center sm:px-10">
         <h1 className="font-display text-3xl font-semibold text-ink">Artwork not found</h1>
@@ -44,7 +49,9 @@ export default function ArtworkDetails() {
     )
   }
 
-  const { prev, next } = getAdjacentArtwork(id)
+  const artworkIndex = artworks.findIndex((item) => item.id === String(id))
+  const prev = artworkIndex > 0 ? artworks[artworkIndex - 1] : null
+  const next = artworkIndex < artworks.length - 1 ? artworks[artworkIndex + 1] : null
   const gallery = artwork.images && artwork.images.length ? artwork.images : [artwork.image]
   const current = gallery[active] || gallery[0]
 

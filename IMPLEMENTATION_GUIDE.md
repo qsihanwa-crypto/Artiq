@@ -886,7 +886,7 @@ class ArtworkSeeder extends Seeder
     }
 }
 ```
-It's tedious to hand-copy 20+ entries, but it's copy-paste, not new content —
+It's tedious to hand-copy 70+ entries, but it's copy-paste, not new content —
 and it means the admin dashboard opens on day one with the *real* catalogue,
 not placeholder rows.
 

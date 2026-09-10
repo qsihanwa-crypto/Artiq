@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ShoppingBag, Trash2 } from 'lucide-react'
-import { site } from '../data/site'
 import { useCart } from '../context/CartContext'
+import { useSettings } from '../context/SettingsContext'
 import { formatPrice } from '../utils/formatPrice'
 import { buildOrderMessage, buildWhatsappUrl } from '../utils/whatsappOrder'
 import Button from '../components/buttons/Button'
@@ -10,6 +10,7 @@ import SuccessCheck from '../components/common/SuccessCheck'
 
 export default function Cart() {
   const { items, count, subtotal, remove, clear } = useCart()
+  const settings = useSettings()
   const [submitted, setSubmitted] = useState(false)
   const [copied, setCopied] = useState(false)
 
@@ -43,7 +44,7 @@ export default function Cart() {
     }
   }, [count])
 
-  const openWhatsapp = () => window.open(buildWhatsappUrl(items), '_blank', 'noopener,noreferrer')
+  const openWhatsapp = () => window.open(buildWhatsappUrl(items, settings), '_blank', 'noopener,noreferrer')
 
   const handleCheckout = () => {
     if (count === 0) return
@@ -52,7 +53,7 @@ export default function Cart() {
   }
 
   const handleCopy = async () => {
-    const text = buildOrderMessage(items)
+    const text = buildOrderMessage(items, settings)
     let ok = false
     try {
       await navigator.clipboard.writeText(text)
@@ -101,7 +102,7 @@ export default function Cart() {
           Your cart
         </h1>
         <p className="mt-4 text-lg text-neutral-600">
-          Reserve an original by {site.artistName}. Checkout opens a WhatsApp message with your list — I&rsquo;ll
+          Reserve an original by {settings.artist_name}. Checkout opens a WhatsApp message with your list — I&rsquo;ll
           confirm it&rsquo;s still available and sort out payment and delivery with you directly.
         </p>
       </section>
@@ -190,7 +191,7 @@ export default function Cart() {
                   {copied ? 'Order text copied to clipboard' : ''}
                 </p>
                 <a
-                  href={buildWhatsappUrl(items)}
+                  href={buildWhatsappUrl(items, settings)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="mt-5 inline-block text-sm text-neutral-500 underline hover:text-ink"

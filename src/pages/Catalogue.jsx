@@ -1,12 +1,17 @@
 import { useMemo, useState } from 'react'
-import { artworks, CATEGORIES } from '../data/artworks'
 import SectionHeading from '../components/common/SectionHeading'
 import Carousel3D from '../components/3d/Carousel3D'
 import CatalogueFilters from '../components/gallery/CatalogueFilters'
 import MasonryGallery from '../components/gallery/MasonryGallery'
+import { useArtworks } from '../hooks/useArtwork'
 
 export default function Catalogue() {
   const [category, setCategory] = useState('all')
+  const { artworks, loading, error } = useArtworks()
+  const categories = useMemo(
+    () => ['all', ...new Set(artworks.map((artwork) => artwork.category))],
+    [artworks],
+  )
 
   const filtered = useMemo(
     () => (category === 'all' ? artworks : artworks.filter((a) => a.category === category)),
@@ -21,22 +26,28 @@ export default function Catalogue() {
           THE COLLECTION
         </h1>
         <p className="mx-auto mt-4 max-w-xl text-lg text-neutral-600">
-          {artworks.length} originals — acrylic and oil paintings, wood-burning and carving. Each one is the only one.
+          {loading ? 'Loading the collection...' : `${artworks.length} originals — acrylic and oil paintings, wood-burning and carving. Each one is the only one.`}
         </p>
       </section>
 
-      <section className="px-6 pb-24 sm:px-10">
-        <div className="mx-auto max-w-6xl">
-          <Carousel3D artworks={artworks} />
-        </div>
-      </section>
+      {error ? (
+        <p className="px-6 pb-24 text-center text-neutral-600 sm:px-10">The collection could not be loaded right now.</p>
+      ) : loading ? (
+        <p className="px-6 pb-24 text-center text-neutral-600 sm:px-10" aria-live="polite">Loading artwork...</p>
+      ) : artworks.length > 0 ? (
+        <section className="px-6 pb-24 sm:px-10">
+          <div className="mx-auto max-w-6xl">
+            <Carousel3D artworks={artworks} />
+          </div>
+        </section>
+      ) : null}
 
       <section className="px-6 pb-28 sm:px-10">
         <div className="mx-auto max-w-6xl">
           <SectionHeading kicker="Browse" title="Full Catalogue" className="mb-10" />
           <div className="mb-10">
             <CatalogueFilters
-              categories={CATEGORIES}
+              categories={categories}
               activeCategory={category}
               onCategoryChange={setCategory}
             />
