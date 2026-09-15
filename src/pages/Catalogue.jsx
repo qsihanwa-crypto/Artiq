@@ -15,7 +15,7 @@ export default function Catalogue() {
 
   const filtered = useMemo(
     () => (category === 'all' ? artworks : artworks.filter((a) => a.category === category)),
-    [category],
+    [category, artworks],
   )
 
   return (
