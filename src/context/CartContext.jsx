@@ -46,7 +46,7 @@ export function CartProvider({ children }) {
   }, [items])
 
   const add = useCallback((art) => {
-    if (!art || !art.available) return
+    if (!art || !art.available || art.status === 'exhibition' || art.status === 'sold') return
     setItems((prev) => (prev.some((i) => i.id === art.id) ? prev : [...prev, toLineItem(art)]))
   }, [])
 

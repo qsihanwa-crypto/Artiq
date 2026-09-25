@@ -84,8 +84,8 @@ export default function AdminArtworkList() {
                     <h2 className="truncate font-display text-lg font-semibold text-ink">{artwork.title}</h2>
                     <p className="mt-1 text-xs uppercase tracking-[0.14em] text-neutral-500">{artwork.category}</p>
                   </div>
-                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${artwork.available ? 'bg-emerald-50 text-emerald-700' : 'bg-neutral-100 text-neutral-500'}`}>
-                    {artwork.available ? 'Available' : 'Sold'}
+                  <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${artwork.status === 'exhibition' ? 'bg-amber-50 text-amber-700' : artwork.available ? 'bg-emerald-50 text-emerald-700' : 'bg-neutral-100 text-neutral-500'}`}>
+                    {artwork.status === 'exhibition' ? 'Exhibition' : artwork.available ? 'For sale' : 'Sold'}
                   </span>
                 </div>
                 <p className="mt-4 font-display text-xl font-semibold text-ink">${Number(artwork.price || 0).toFixed(2)}</p>

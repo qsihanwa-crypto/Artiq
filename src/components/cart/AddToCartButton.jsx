@@ -28,7 +28,12 @@ export default function AddToCartButton({ artwork, size = 'lg', className = '' }
 
   const iconSize = size === 'sm' ? 14 : 16
 
-  if (!artwork.available) {
+  if (artwork.status === 'exhibition') {
+    if (size === 'sm') return null
+    return <span className={`${BASE} ${SIZES[size]} border border-amber-200 text-amber-700 ${className}`}>Exhibition only</span>
+  }
+
+  if (artwork.status === 'sold' || artwork.available === false) {
     if (size === 'sm') return null
     return (
       <span

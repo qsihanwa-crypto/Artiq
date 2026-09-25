@@ -14,7 +14,7 @@ const CATEGORY_OPTIONS = [
 const CUSTOM_CATEGORY_VALUE = '__custom__'
 const EMPTY_FORM = {
   title: '', slug: '', medium: '', category: '', category_label: '', dimensions: '', aspect: 'portrait',
-  palette: [], description: '', features: [], price: '', available: true, materials: [], technique: '',
+  palette: [], description: '', features: [], price: '', available: true, status: 'for_sale', materials: [], technique: '',
   tags: [], alt: '', featured: false, sort_order: 0,
 }
 const FIELD_HELP = {
@@ -34,6 +34,7 @@ const FIELD_HELP = {
   materials: 'One material per line.',
   tags: 'One keyword per line to help organise related artworks.',
   available: 'Turn off when the artwork is sold or unavailable for orders.',
+  status: 'For sale adds the artwork to the cart. Exhibition only keeps it visible without selling it. Sold marks it unavailable.',
   featured: 'Show this artwork in the featured selection on the home page.',
   images: 'Add one or more clear JPEG, PNG, or WebP images. The first image becomes the main image.',
 }
@@ -68,6 +69,7 @@ function normalizeArtwork(artwork) {
   return {
     ...EMPTY_FORM,
     ...artwork,
+    status: artwork.status || (artwork.available ? 'for_sale' : 'sold'),
     ...Object.fromEntries(ARRAY_FIELDS.map((field) => [field, Array.isArray(artwork[field]) ? artwork[field] : []])),
   }
 }
@@ -237,7 +239,7 @@ export default function AdminArtworkForm() {
 
         <fieldset className="space-y-4 border-t border-neutral-200 pt-6">
           <legend className="mb-2 font-display text-2xl font-semibold text-ink">Status and images</legend>
-          <label className="flex items-center gap-3 text-sm text-neutral-700"><input type="checkbox" checked={form.available} onChange={(event) => update('available', event.target.checked)} /> <span>Available for sale<FieldHelp text={FIELD_HELP.available} /></span></label>
+          <label className="block text-sm text-neutral-700"><span>Status<FieldHelp text={FIELD_HELP.status} /></span><select required value={form.status} onChange={(event) => { const status = event.target.value; update('status', status); update('available', status === 'for_sale') }} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2"><option value="for_sale">For sale</option><option value="exhibition">Exhibition only</option><option value="sold">Sold</option></select></label>
           <label className="flex items-center gap-3 text-sm text-neutral-700"><input type="checkbox" checked={form.featured} onChange={(event) => update('featured', event.target.checked)} /> <span>Featured on Home<FieldHelp text={FIELD_HELP.featured} /></span></label>
           <div>
             <p className="text-sm font-medium text-neutral-700">Add images<FieldHelp text={FIELD_HELP.images} /></p>
