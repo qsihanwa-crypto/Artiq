@@ -46,7 +46,7 @@ export default function PageTransition({ children }) {
     <>
       <Routes location={displayLocation}>{children}</Routes>
       <div ref={overlayRef} aria-hidden="true" className="pointer-events-none fixed inset-0 z-[150] hidden bg-white">
-        <svg viewBox="0 0 1200 4" preserveAspectRatio="none" className="absolute top-1/2 h-1 w-full -translate-y-1/2 text-ink">
+        <svg viewBox="0 0 1200 4" preserveAspectRatio="none" className="absolute top-1/2 h-1 w-full -translate-y-1/2 text-zinc-950">
           <path ref={lineRef} d="M 0 2 L 1200 2" className="signature-line-path" vectorEffect="non-scaling-stroke" />
         </svg>
       </div>
