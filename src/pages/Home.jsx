@@ -6,6 +6,7 @@ import SectionHeading from '../components/common/SectionHeading'
 import AnimatedText from '../components/common/AnimatedText'
 import ArtworkCard from '../components/artwork/ArtworkCard'
 import InfiniteSpiral from '../components/gallery/InfiniteSpiral'
+import DetailToWhole from '../components/common/DetailToWhole'
 import SignatureThread from '../components/common/SignatureThread'
 import LottieAnimation from '../components/lottie/LottieAnimation'
 import brushLoader from '../assets/lottie/brush-loader.json'
@@ -14,10 +15,13 @@ import { revealOnScroll, parallaxOnScroll } from '../animations/scrollAnimations
 import { useReducedMotion } from '../hooks/useReducedMotion'
 import { useIsTouchDevice } from '../hooks/useIsTouchDevice'
 import { useSettings } from '../context/SettingsContext'
+import { useGalleryContent } from '../hooks/useGalleryContent'
 import { useArtworks } from '../hooks/useArtwork'
-import { artworks } from '../data/artworks'
-import artistPortrait from '../assets/images/dennis-liew.jpg'
 
+// The home page's decorative / teaser imagery draws only from the non-spiritual
+// work. The spiritual pieces are the majority of the catalogue and are shown
+// there in full; here everything is cropped, tilted or shrunk to a chip, and a
+// sacred image handled that way can read as disrespectful.
 // Decorative artwork cluster behind the hero headline — the page's thesis is
 // "art is the only colour", so the hero leads with several fragments rather
 // than one. `depth` scales the pointer/scroll parallax; `mobile` fragments
@@ -25,26 +29,26 @@ import artistPortrait from '../assets/images/dennis-liew.jpg'
 const ASPECT_CLASS = { portrait: 'aspect-[4/5]', landscape: 'aspect-[5/4]', square: 'aspect-square' }
 const HERO_FRAGMENT_CONFIG = [
   {
-    artId: '8',
+    artId: '51',
     depth: 1,
     className:
       'w-[36vw] right-[-10%] top-[-1%] -rotate-6 ' +
       'sm:w-[24vw] sm:max-w-[300px] sm:right-[3%] sm:top-[15%] sm:-rotate-3',
   },
   {
-    artId: '4',
+    artId: '69',
     depth: 0.45,
     className: 'hidden sm:block sm:w-[12vw] sm:max-w-[132px] sm:right-[27%] sm:top-[7%] sm:rotate-6',
   },
   {
-    artId: '7',
+    artId: '54',
     depth: 0.7,
     className:
       'w-[30vw] left-[-9%] bottom-[-4%] rotate-3 ' +
       'sm:w-[16vw] sm:max-w-[196px] sm:left-auto sm:right-[9%] sm:bottom-[6%] sm:rotate-2',
   },
   {
-    artId: '1',
+    artId: '58',
     depth: 0.35,
     className: 'hidden sm:block sm:w-[11vw] sm:max-w-[124px] sm:left-[-3%] sm:bottom-[3%] sm:-rotate-6',
   },
@@ -52,10 +56,19 @@ const HERO_FRAGMENT_CONFIG = [
 
 export default function Home() {
   const settings = useSettings()
-  const { artworks: featuredArtworks } = useArtworks({ featured: true })
+  const { artworks, howISeePieces, loading, error } = useGalleryContent()
+  const {
+    artworks: featuredArtworks,
+    loading: featuredLoading,
+    error: featuredError,
+  } = useArtworks({ featured: true })
 
+  if (loading || featuredLoading) return <div className="px-6 pt-40 text-center text-neutral-600 sm:px-10">Loading home page...</div>
+  if (error || featuredError) return <div className="px-6 pt-40 text-center text-neutral-600 sm:px-10">The home page could not be loaded right now.</div>
+
+  const showcase = artworks.filter((artwork) => artwork.category !== 'spiritual')
   const pick = (id) => artworks.find((artwork) => artwork.id === id)
-  const spiralItems = artworks.map((art) => ({
+  const spiralItems = showcase.slice(0, 12).map((art) => ({
     id: art.id,
     src: art.image,
     alt: art.alt,
@@ -63,6 +76,7 @@ export default function Home() {
     label: `View "${art.title}," ${art.medium}`,
   }))
   const heroFragments = HERO_FRAGMENT_CONFIG.map((fragment) => ({ ...fragment, art: pick(fragment.artId) })).filter((fragment) => fragment.art)
+  const artistPortrait = pick('49') || showcase[0]
   const homeContent = settings.home_content || {}
   const heroLines = homeContent.heroLines || ['EVERY PIECE', 'MADE', 'BY HAND.']
   const fill = (text = '') => text.replace('{artist_name}', settings.artist_name || '').replace('{location}', settings.location || '')
@@ -74,6 +88,7 @@ export default function Home() {
       <IntroStatement content={homeContent} />
       <ExploreSpiral items={spiralItems} />
       <ArtistIntro portrait={artistPortrait} settings={settings} content={homeContent} />
+      <HowISeeSection pieces={howISeePieces} />
       <FeaturedArtwork artworks={featuredArtworks} />
     </>
   )
@@ -182,18 +197,18 @@ function Hero({ fragments, settings, content, fill, heroLines }) {
       </div>
 
       <div className="relative z-10 mx-auto flex max-w-6xl flex-col gap-8">
-        <div ref={kickerRef} className="flex items-center gap-2 text-sm font-medium uppercase tracking-[0.2em] text-zinc-500">
+        <div ref={kickerRef} className="flex items-center gap-2 text-sm font-medium uppercase tracking-[0.2em] text-neutral-500">
           <LottieAnimation animationData={brushLoader} className="h-5 w-5" />
           {settings.artist_name} — {settings.location}
         </div>
 
-        <h1 className="font-display text-[15vw] font-semibold leading-[0.95] tracking-tight text-zinc-950 sm:text-[9vw] lg:text-[7.5rem]">
+        <h1 className="font-display text-[15vw] font-semibold leading-[0.95] tracking-tight text-ink sm:text-[9vw] lg:text-[7.5rem]">
           <span className="block overflow-hidden"><span ref={line1Ref} className="inline-block">{heroLines[0]}</span></span>
           <span className="block overflow-hidden"><span ref={line2Ref} className="inline-block">{heroLines[1]}</span></span>
           <span className="block overflow-hidden"><span ref={line3Ref} className="inline-block">{heroLines[2]}</span></span>
         </h1>
 
-        <p ref={subtextRef} className="max-w-lg text-lg text-zinc-600 sm:text-xl">
+        <p ref={subtextRef} className="max-w-lg text-lg text-neutral-600 sm:text-xl">
           {fill(content.heroSubtext)}
         </p>
 
@@ -221,14 +236,14 @@ function IntroStatement({ content }) {
         <AnimatedText
           as="h2"
           text={content.introHeadline1}
-          className="font-display text-4xl font-semibold leading-tight tracking-tight text-zinc-950 sm:text-5xl md:text-6xl"
+          className="font-display text-4xl font-semibold leading-tight tracking-tight text-ink sm:text-5xl md:text-6xl"
         />
         <AnimatedText
           as="h2"
           text={content.introHeadline2}
-          className="mt-4 font-display text-4xl font-semibold leading-tight tracking-tight text-zinc-400 sm:text-5xl md:text-6xl"
+          className="mt-4 font-display text-4xl font-semibold leading-tight tracking-tight text-neutral-400 sm:text-5xl md:text-6xl"
         />
-        <p className="mt-8 max-w-2xl text-lg leading-relaxed text-zinc-600">
+        <p className="mt-8 max-w-2xl text-lg leading-relaxed text-neutral-600">
           {content.introBody}
         </p>
       </div>
@@ -246,7 +261,7 @@ function ExploreSpiral({ items }) {
           align="center"
           kicker="Discover"
           title={['EXPLORE', 'THE WORK']}
-          subtitle="Gardens in bloom, quiet lakes and hills, and a corner of old Penang."
+          subtitle="Sacred figures, animals, vintage cars and hand-lettered boards — in paint on canvas, and burned or cut into wood."
           className="mx-auto"
         />
         <div className="relative mt-16 h-[400px] overflow-hidden sm:h-[520px] lg:h-[600px]">
@@ -267,7 +282,7 @@ function ExploreSpiral({ items }) {
             pauseOnHover
           />
         </div>
-        <p className="mt-10 text-center text-sm text-zinc-500">
+        <p className="mt-10 text-center text-sm text-neutral-500">
           Drag the spiral to look around, or open the full catalogue below.
         </p>
         <div className="mt-6 flex justify-center">
@@ -296,24 +311,41 @@ function ArtistIntro({ portrait, settings, content }) {
       <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-12 md:grid-cols-2">
         <div data-reveal className="relative">
           <div className="overflow-hidden rounded-3xl bg-neutral-100">
-            <img src={portrait} alt="Dennis Liew sitting in front of a wall of his landscape paintings." className="aspect-[4/5] w-full object-cover" />
+            <img src={portrait?.image} alt={portrait?.alt || ''} className="aspect-[4/5] w-full object-cover" />
           </div>
           <div className="glass absolute -bottom-6 -right-6 hidden rounded-2xl px-5 py-4 sm:block">
-            <p className="text-sm font-medium text-zinc-950">{settings.location}</p>
+            <p className="text-sm font-medium text-ink">{settings.location}</p>
           </div>
         </div>
         <div data-reveal className="flex flex-col gap-6">
-          <SectionHeading kicker="The Artist" title="Meet Dennis" />
-          <p className="text-lg leading-relaxed text-zinc-600">
+          <SectionHeading kicker="The Artist" title="Meet Kirtanraw" />
+          <p className="text-lg leading-relaxed text-neutral-600">
             {content.artistIntroParagraphs?.[0]}
           </p>
-          <p className="text-lg leading-relaxed text-zinc-600">
+          <p className="text-lg leading-relaxed text-neutral-600">
             {content.artistIntroParagraphs?.[1]}
           </p>
           <Button to="/about" variant="secondary" size="md" showArrow className="w-fit">
             Read more
           </Button>
         </div>
+      </div>
+    </section>
+  )
+}
+
+function HowISeeSection({ pieces }) {
+  return (
+    <section className="px-6 py-16 sm:px-10">
+      <div className="mx-auto max-w-6xl">
+        <SectionHeading
+          align="center"
+          kicker="Interact"
+          title="HOW I SEE"
+          subtitle="Every piece begins with one detail I get stuck on. Flip a card to see the part I started with, then the whole work it turned into."
+          className="mx-auto mb-12"
+        />
+        <DetailToWhole pieces={pieces} />
       </div>
     </section>
   )

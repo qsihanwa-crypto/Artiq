@@ -12,7 +12,7 @@ export default function CatalogueFilters({ categories, activeCategory, onCategor
             onClick={() => onCategoryChange(cat)}
             aria-pressed={isActive}
             className={`rounded-full px-5 py-2.5 text-sm font-medium transition-colors duration-200 ${
-              isActive ? 'bg-ink text-white' : 'glass text-zinc-700 hover:bg-white/85'
+              isActive ? 'bg-ink text-white' : 'glass text-neutral-700 hover:bg-white/85'
             }`}
           >
             {CATEGORY_LABELS[cat] || cat}

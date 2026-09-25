@@ -231,7 +231,7 @@ const InfiniteSpiral = ({
         hoveredRef.current = false;
       }}
       onPointerDown={event => {
-        if (!dragEnabled || event.button !== 0) return;
+        if (!dragEnabled || event.button !== 0 || event.target.closest('a')) return;
         draggingRef.current = true;
         dragMovedRef.current = false;
         lastPointerYRef.current = event.clientY;

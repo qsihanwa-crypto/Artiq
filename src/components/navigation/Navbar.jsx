@@ -1,15 +1,42 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Menu, ShoppingBag, X } from 'lucide-react'
 import { NAV_LINKS, site } from '../../data/site'
+import { useCart } from '../../context/CartContext'
 import MobileMenu from './MobileMenu'
+
+function CartLink() {
+  const { count } = useCart()
+  return (
+    <NavLink
+      to="/cart"
+      aria-label={count ? `Cart, ${count} ${count === 1 ? 'item' : 'items'}` : 'Cart, empty'}
+      className={({ isActive }) =>
+        `relative inline-flex h-11 items-center gap-2 rounded-full border border-ink bg-ink px-4 text-sm font-medium text-white transition-colors duration-200 hover:bg-ink-soft focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink ${
+          isActive ? 'bg-ink-soft' : ''
+        }`
+      }
+    >
+      <ShoppingBag size={18} aria-hidden="true" />
+      <span>Cart</span>
+      {count > 0 && (
+        <span
+          aria-hidden="true"
+          className="inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1 text-[11px] font-semibold leading-none text-ink"
+        >
+          {count}
+        </span>
+      )}
+    </NavLink>
+  )
+}
 
 function NavItem({ to, label }) {
   return (
     <NavLink
       to={to}
       className={({ isActive }) =>
-        `relative px-3 py-2 text-sm font-medium transition-colors ${isActive ? 'text-zinc-950' : 'text-zinc-500 hover:text-zinc-950'}`
+        `relative px-3 py-2 text-sm font-medium transition-colors ${isActive ? 'text-ink' : 'text-neutral-500 hover:text-ink'}`
       }
     >
       {({ isActive }) => (
@@ -39,7 +66,7 @@ export default function Navbar() {
         aria-label="Primary"
         className="glass flex w-full max-w-3xl items-center justify-between rounded-full px-4 py-2.5 sm:px-6"
       >
-        <NavLink to="/" className="font-display text-base font-semibold tracking-tight text-zinc-950 sm:text-lg">
+        <NavLink to="/" className="font-display text-base font-semibold tracking-tight text-ink sm:text-lg">
           {site.artistName}
         </NavLink>
 
@@ -50,10 +77,12 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
+          <CartLink />
+
           <button
             type="button"
             onClick={() => setOpen(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-full text-zinc-950 transition-colors hover:bg-black/5 md:hidden"
+            className="flex h-10 w-10 items-center justify-center rounded-full text-ink transition-colors hover:bg-black/5 md:hidden"
             aria-label="Open menu"
             aria-expanded={open}
           >
@@ -72,7 +101,7 @@ export function CloseButton({ onClose }) {
     <button
       type="button"
       onClick={onClose}
-      className="flex h-11 w-11 items-center justify-center rounded-full text-zinc-950 transition-colors hover:bg-black/5"
+      className="flex h-11 w-11 items-center justify-center rounded-full text-ink transition-colors hover:bg-black/5"
       aria-label="Close menu"
     >
       <X size={24} aria-hidden="true" />

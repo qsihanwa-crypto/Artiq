@@ -21,19 +21,19 @@ export default function Catalogue() {
   return (
     <div className="pt-32 sm:pt-40">
       <section className="px-6 pb-16 text-center sm:px-10">
-        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">Catalogue</span>
-        <h1 className="mt-4 font-display text-5xl font-semibold tracking-tight text-zinc-950 sm:text-6xl md:text-7xl">
+        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">Catalogue</span>
+        <h1 className="mt-4 font-display text-5xl font-semibold tracking-tight text-ink sm:text-6xl md:text-7xl">
           THE COLLECTION
         </h1>
-        <p className="mx-auto mt-4 max-w-xl text-lg text-zinc-600">
-          {loading ? 'Loading the collection...' : `${artworks.length} paintings of gardens, landscapes and places.`}
+        <p className="mx-auto mt-4 max-w-xl text-lg text-neutral-600">
+          {loading ? 'Loading the collection...' : `${artworks.length} originals — acrylic and oil paintings, wood-burning and carving. Each one is the only one.`}
         </p>
       </section>
 
       {error ? (
-        <p className="px-6 pb-24 text-center text-zinc-600 sm:px-10">The collection could not be loaded right now.</p>
+        <p className="px-6 pb-24 text-center text-neutral-600 sm:px-10">The collection could not be loaded right now.</p>
       ) : loading ? (
-        <p className="px-6 pb-24 text-center text-zinc-600 sm:px-10" aria-live="polite">Loading artwork...</p>
+        <p className="px-6 pb-24 text-center text-neutral-600 sm:px-10" aria-live="polite">Loading artwork...</p>
       ) : artworks.length > 0 ? (
         <section className="px-6 pb-24 sm:px-10">
           <div className="mx-auto max-w-6xl">

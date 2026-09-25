@@ -28,8 +28,8 @@ export default function MasonryGallery({ artworks }) {
   if (artworks.length === 0) {
     return (
       <div className="glass rounded-3xl px-8 py-20 text-center">
-        <p className="text-lg font-medium text-zinc-950">No artwork matches these filters yet.</p>
-        <p className="mt-2 text-zinc-500">Try a different category or year.</p>
+        <p className="text-lg font-medium text-ink">No artwork matches these filters yet.</p>
+        <p className="mt-2 text-neutral-500">Try a different category or year.</p>
       </div>
     )
   }

@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom'
 import { attachTilt } from '../../animations/microInteractions'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
 import { useIsTouchDevice } from '../../hooks/useIsTouchDevice'
+import { formatPrice } from '../../utils/formatPrice'
+import AddToCartButton from '../cart/AddToCartButton'
 
 const ASPECT = {
   portrait: 'aspect-[4/5]',
@@ -41,18 +43,25 @@ export default function ArtworkCard({ artwork, priority = false, tilt = true, cl
           className="h-full w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-[1.06]"
         />
         <div className="glass pointer-events-none absolute inset-x-0 bottom-0 translate-y-full px-4 py-3 transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:translate-y-0">
-          <p className="text-xs text-zinc-600">{artwork.medium}</p>
+          <p className="text-xs text-neutral-600">{artwork.medium} · {artwork.dimensions}</p>
         </div>
       </div>
 
       <div className="mt-3 flex items-baseline justify-between gap-3">
         <Link
           to={`/artwork/${artwork.id}`}
-          className="font-display text-base font-medium text-zinc-950 hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+          className="font-display text-base font-medium text-ink hover:underline focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
         >
           {artwork.title}
         </Link>
-        <p className="shrink-0 text-sm text-zinc-500">{artwork.categoryLabel}</p>
+        <p className="shrink-0 text-sm text-neutral-500">{artwork.categoryLabel}</p>
+      </div>
+
+      <div className="mt-2 flex items-center justify-between gap-3">
+        <p className="text-sm font-medium text-ink">
+          {artwork.available ? formatPrice(artwork.price) : <span className="text-neutral-400">Sold</span>}
+        </p>
+        <AddToCartButton artwork={artwork} size="sm" />
       </div>
     </div>
   )

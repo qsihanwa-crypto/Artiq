@@ -13,7 +13,7 @@ const PATHS = {
  * The site's recurring signature motif — a thin black line that draws itself
  * as its section enters view. Decorative only: aria-hidden, never blocks content.
  */
-export default function WavyLine({ variant = 'horizontal', className = '', color = 'text-zinc-950', opacity = 0.25 }) {
+export default function WavyLine({ variant = 'horizontal', className = '', color = 'text-ink', opacity = 0.25 }) {
   const pathRef = useRef(null)
   const wrapRef = useRef(null)
   const reduced = useReducedMotion()
