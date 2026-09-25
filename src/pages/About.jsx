@@ -1,96 +1,28 @@
 import { useLayoutEffect, useRef } from 'react'
 import gsap from 'gsap'
-import kirtanrawPortrait from '../assets/images/kirtanraw-portrait.jpg'
+import { ArrowUpRight } from 'lucide-react'
+import dennisPortrait from '../assets/images/dennis-liew.jpg'
+import patriciaAndDennis from '../assets/images/patricia-and-dennis.jpg'
 import SectionHeading from '../components/common/SectionHeading'
 import AnimatedText from '../components/common/AnimatedText'
 import Button from '../components/buttons/Button'
 import WavyLine from '../components/common/WavyLine'
-import ProcessThread from '../components/about/ProcessThread'
-import SteadyCard from '../components/about/SteadyCard'
 import { revealOnScroll } from '../animations/scrollAnimations'
 import { useReducedMotion } from '../hooks/useReducedMotion'
-import { useGalleryContent } from '../hooks/useGalleryContent'
+import { site } from '../data/site'
 
 export default function About() {
-  const { processSteps, steadyItems, loading, error } = useGalleryContent()
-
-  if (loading) return <div className="px-6 pt-40 text-center text-neutral-600 sm:px-10">Loading about page...</div>
-  if (error) return <div className="px-6 pt-40 text-center text-neutral-600 sm:px-10">The about page could not be loaded right now.</div>
-
   return (
     <div className="pt-32 sm:pt-40">
       <MeetSection />
       <StorySection />
-      <LifeAndArt steadyItems={steadyItems} />
-      <ProcessSection processSteps={processSteps} />
+      <PressSection />
       <ClosingStatement />
     </div>
   )
 }
 
-function MeetSection() {
-  return (
-    <section className="px-6 pb-20 sm:px-10">
-      <div className="mx-auto max-w-4xl text-center">
-        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">About</span>
-        <h1 className="mt-4 font-display text-5xl font-semibold tracking-tight text-ink sm:text-6xl md:text-7xl">
-          Meet Kirtanraw
-        </h1>
-        <p className="mx-auto mt-6 max-w-xl text-lg text-neutral-600">
-          Twenty years of acrylic and oil paint, wood-burning and carving — working on my own, in Kuala Lumpur, Malaysia.
-        </p>
-      </div>
-      <div className="mx-auto mt-14 max-w-3xl overflow-hidden rounded-3xl bg-neutral-100">
-        <img
-          src={kirtanrawPortrait}
-          alt="Kirtanraw Subramanian outside the Kirtanraw Art Gallery, beside a hand-painted welcome sign."
-          className="aspect-[7/3] w-full object-cover object-center"
-        />
-      </div>
-    </section>
-  )
-}
-
-function StorySection() {
-  const ref = useRef(null)
-  const reduced = useReducedMotion()
-
-  useLayoutEffect(() => {
-    const ctx = gsap.context(() => revealOnScroll('[data-reveal]', { reduced }), ref)
-    return () => ctx.revert()
-  }, [reduced])
-
-  return (
-    <section ref={ref} className="px-6 py-20 sm:px-10">
-      <div className="mx-auto grid max-w-5xl grid-cols-1 gap-10 md:grid-cols-[1fr_1.3fr]">
-        <div data-reveal>
-          <SectionHeading kicker="Story" title="Twenty years by hand" />
-        </div>
-        <div data-reveal className="flex flex-col gap-6 text-lg leading-relaxed text-neutral-600">
-          <p>
-            I&rsquo;m Kirtanraw. I&rsquo;m 32, and I&rsquo;ve been painting for about twenty of those
-            years. Somewhere along the way the wood took over as much as the canvas &mdash; pyrography,
-            relief carving, hand-lettered boards &mdash; so now I move between all of it, whatever the
-            piece needs.
-          </p>
-          <p>
-            I was diagnosed with Asperger&rsquo;s syndrome. The short version: I notice small things,
-            I repeat them until they&rsquo;re right, and I can lose a whole day to one corner of a
-            painting without minding. In the studio that isn&rsquo;t a struggle &mdash; it&rsquo;s the
-            part that works.
-          </p>
-          <p>
-            The subjects run from Hanuman, Ganesha and Krishna to tigers, owls, old cars and the odd
-            &ldquo;keep going&rdquo; sign. What doesn&rsquo;t change is the standard: every customer
-            gets the best piece I can make, finished properly, no shortcuts.
-          </p>
-        </div>
-      </div>
-    </section>
-  )
-}
-
-function LifeAndArt({ steadyItems }) {
+function useReveal() {
   const ref = useRef(null)
   const reduced = useReducedMotion()
 
@@ -99,28 +31,95 @@ function LifeAndArt({ steadyItems }) {
     return () => ctx.revert()
   }, [reduced])
 
+  return ref
+}
+
+function MeetSection() {
+  return (
+    <section className="px-6 pb-20 sm:px-10">
+      <div className="mx-auto max-w-4xl text-center">
+        <span className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">About</span>
+        <h1 className="mt-4 font-display text-5xl font-semibold tracking-tight text-zinc-950 sm:text-6xl md:text-7xl">
+          Meet Dennis
+        </h1>
+        <p className="mx-auto mt-6 max-w-xl text-lg text-zinc-600">
+          Hello and welcome to my site! I am Dennis Liew, an artist based in Malaysia.
+        </p>
+      </div>
+      <div className="mx-auto mt-14 max-w-3xl overflow-hidden rounded-3xl bg-neutral-100">
+        <img
+          src={dennisPortrait}
+          alt="Dennis Liew sitting in front of a wall of his landscape paintings."
+          className="aspect-[4/3] w-full object-cover object-center"
+        />
+      </div>
+    </section>
+  )
+}
+
+function StorySection() {
+  const ref = useReveal()
+
   return (
     <section ref={ref} className="px-6 py-20 sm:px-10">
-      <div className="mx-auto max-w-5xl">
-        <SectionHeading align="center" kicker="Life & Art" title="What steadies the work" className="mx-auto" />
-        <div className="mt-14 grid grid-cols-1 gap-6 sm:grid-cols-3">
-          {steadyItems.map((item) => (
-            <div key={item.title} data-reveal>
-              <SteadyCard item={item} />
-            </div>
-          ))}
+      <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-10 md:grid-cols-2">
+        <div data-reveal className="flex flex-col gap-6 text-lg leading-relaxed text-zinc-600">
+          <SectionHeading kicker="Story" title="My journey" />
+          <p>
+            I have held various exhibitions in Malaysia and have sold art pieces to many fans and
+            clients. I have also held live-art painting demonstrations and taught art classes
+            organised by Gamuda Land.
+          </p>
+          <p>
+            My mother, Patricia, is my pillar of strength and encouragement. It is because of her that
+            I am able to continue my passion in painting. She helps with the administrative work that I
+            am unable to do yet due to Asperger syndrome.
+          </p>
+        </div>
+        <div data-reveal className="overflow-hidden rounded-3xl bg-neutral-100">
+          <img
+            src={patriciaAndDennis}
+            alt="Dennis Liew and his mother, Patricia, standing in front of his paintings at an exhibition."
+            className="aspect-[4/3] w-full object-cover"
+          />
         </div>
       </div>
     </section>
   )
 }
 
-function ProcessSection({ processSteps }) {
+function PressSection() {
+  const ref = useReveal()
+
   return (
-    <section className="relative px-6 py-24 sm:px-10">
+    <section ref={ref} className="px-6 py-20 sm:px-10">
       <div className="mx-auto max-w-5xl">
-        <SectionHeading align="center" kicker="Creative Process" title="From idea to finished work" className="mx-auto" />
-        <ProcessThread steps={processSteps} />
+        <SectionHeading align="center" kicker="In the media" title="As featured in" className="mx-auto" />
+        <ul className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {site.press.map((item) => (
+            <li key={item.href} data-reveal>
+              <a
+                href={item.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="glass group flex h-full items-start justify-between gap-4 rounded-2xl p-6 transition-colors hover:bg-white/85 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ink"
+              >
+                <span>
+                  <span className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">
+                    {item.year} · {item.outlet}
+                  </span>
+                  <span className="mt-2 block font-display text-lg font-medium text-zinc-950">{item.title}</span>
+                </span>
+                <ArrowUpRight
+                  size={20}
+                  className="mt-1 shrink-0 text-zinc-400 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+                <span className="sr-only">(opens in a new tab)</span>
+              </a>
+            </li>
+          ))}
+        </ul>
       </div>
     </section>
   )
@@ -133,8 +132,8 @@ function ClosingStatement() {
         <WavyLine variant="horizontal" className="pointer-events-none absolute -top-10 left-1/2 h-16 w-64 -translate-x-1/2" opacity={0.2} />
         <AnimatedText
           as="p"
-          text="I make things because it is how I pay attention. Twenty years in, that hasn't worn off — and I would love for you to see where it has got to."
-          className="font-display text-3xl font-medium leading-snug text-ink sm:text-4xl"
+          text="With the continuous support from you and all the fans of my art, I will learn to overcome the challenges ahead. Thank you from the bottom of my heart."
+          className="font-display text-3xl font-medium leading-snug text-zinc-950 sm:text-4xl"
         />
         <div className="mt-10 flex justify-center">
           <Button to="/catalogue" variant="primary" size="lg" showArrow>

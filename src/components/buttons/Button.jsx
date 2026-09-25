@@ -4,8 +4,8 @@ import { ArrowRight } from 'lucide-react'
 
 const VARIANTS = {
   primary: 'bg-ink text-white border border-ink hover:bg-ink-soft',
-  secondary: 'glass text-ink hover:bg-white/85',
-  ghost: 'bg-transparent text-ink border border-transparent hover:border-neutral-300',
+  secondary: 'glass text-zinc-950 hover:bg-white/85',
+  ghost: 'bg-transparent text-zinc-950 border border-transparent hover:border-neutral-300',
 }
 
 const SIZES = {

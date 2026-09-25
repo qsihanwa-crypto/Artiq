@@ -117,8 +117,8 @@ export default function Carousel3D({ artworks }) {
         <Link to={`/artwork/${art.id}`} data-cursor="view" className="block overflow-hidden rounded-2xl bg-neutral-100">
           <img src={art.image} alt={art.alt} className="aspect-[4/5] w-full object-cover" />
         </Link>
-        <p className="mt-4 font-display text-lg font-medium text-ink">{art.title}</p>
-        <p className="text-sm text-neutral-500">{art.medium}</p>
+        <p className="mt-4 font-display text-lg font-medium text-zinc-950">{art.title}</p>
+        <p className="text-sm text-zinc-500">{art.medium}</p>
         <CarouselControls onPrev={prev} onNext={next} index={activeIndex} total={n} />
       </div>
     )
@@ -180,8 +180,8 @@ export default function Carousel3D({ artworks }) {
       </div>
 
       <div className="mt-6 text-center">
-        <p className="font-display text-lg font-medium text-ink">{artworks[activeIndex].title}</p>
-        <p className="text-sm text-neutral-500">{artworks[activeIndex].medium}</p>
+        <p className="font-display text-lg font-medium text-zinc-950">{artworks[activeIndex].title}</p>
+        <p className="text-sm text-zinc-500">{artworks[activeIndex].medium}</p>
       </div>
 
       <CarouselControls onPrev={prev} onNext={next} index={activeIndex} total={n} />
@@ -192,12 +192,12 @@ export default function Carousel3D({ artworks }) {
 function CarouselControls({ onPrev, onNext, index, total }) {
   return (
     <div className="mt-6 flex flex-col items-center gap-3">
-      <p className="text-xs text-neutral-500">Drag or scroll to explore</p>
+      <p className="text-xs text-zinc-500">Drag or scroll to explore</p>
       <div className="flex items-center gap-4">
         <Button variant="secondary" size="md" onClick={onPrev} className="px-5 py-2.5 text-sm">
           <ArrowLeft size={16} aria-hidden="true" /> Previous artwork
         </Button>
-        <span className="text-sm tabular-nums text-neutral-500">{index + 1} / {total}</span>
+        <span className="text-sm tabular-nums text-zinc-500">{index + 1} / {total}</span>
         <Button variant="secondary" size="md" onClick={onNext} className="px-5 py-2.5 text-sm">
           Next artwork <ArrowRight size={16} aria-hidden="true" />
         </Button>

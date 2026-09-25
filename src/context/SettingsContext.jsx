@@ -1,17 +1,10 @@
-import { createContext, useContext, useEffect, useState } from 'react';
-import { apiGet } from '../api/client';
+import { createContext, useContext } from 'react';
+import { site } from '../data/site';
 
-const SettingsContext = createContext(null);
+const SettingsContext = createContext(site);
 
 export function SettingsProvider({ children }) {
-  const [settings, setSettings] = useState(null);
-
-  useEffect(() => {
-    apiGet('/settings').then(setSettings).catch(() => setSettings({}));
-  }, []);
-
-  if (!settings) return null; // or a loading skeleton
-  return <SettingsContext.Provider value={settings}>{children}</SettingsContext.Provider>;
+  return <SettingsContext.Provider value={site}>{children}</SettingsContext.Provider>;
 }
 
 export const useSettings = () => useContext(SettingsContext);
