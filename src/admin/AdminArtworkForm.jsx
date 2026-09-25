@@ -239,7 +239,7 @@ export default function AdminArtworkForm() {
 
         <fieldset className="space-y-4 border-t border-neutral-200 pt-6">
           <legend className="mb-2 font-display text-2xl font-semibold text-ink">Status and images</legend>
-          <label className="block text-sm text-neutral-700"><span>Status<FieldHelp text={FIELD_HELP.status} /></span><select required value={form.status} onChange={(event) => { const status = event.target.value; update('status', status); update('available', status === 'for_sale') }} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2"><option value="for_sale">For sale</option><option value="exhibition">Exhibition only</option><option value="sold">Sold</option></select></label>
+            <label className="block text-sm text-neutral-700"><span>Status<FieldHelp text={FIELD_HELP.status} /></span><select required value={form.status} onChange={(event) => { const status = event.target.value; update('status', status); update('available', status !== 'sold') }} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2"><option value="for_sale">For sale</option><option value="exhibition">Exhibition only</option><option value="sold">Sold</option></select></label>
           <label className="flex items-center gap-3 text-sm text-neutral-700"><input type="checkbox" checked={form.featured} onChange={(event) => update('featured', event.target.checked)} /> <span>Featured on Home<FieldHelp text={FIELD_HELP.featured} /></span></label>
           <div>
             <p className="text-sm font-medium text-neutral-700">Add images<FieldHelp text={FIELD_HELP.images} /></p>
