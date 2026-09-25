@@ -31,7 +31,7 @@ export default function Carousel3D({ artworks }) {
   const dragState = useRef(null)
   const settleTimeout = useRef(null)
 
-  const activeIndex = Math.round(((position % n) + n) % n)
+  const activeIndex = ((Math.round(position) % n) + n) % n
 
   const animateTo = useCallback(
     (target, duration = 0.7) => {
@@ -150,7 +150,7 @@ export default function Carousel3D({ artworks }) {
           const rotateY = -delta * 32
           const scale = 1 - absDelta * 0.16
           const opacity = 1 - absDelta * 0.32
-          const isActive = delta === 0
+          const isActive = i === activeIndex
 
           return (
             <Link
