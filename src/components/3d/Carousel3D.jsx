@@ -90,15 +90,15 @@ export default function Carousel3D({ artworks }) {
     animateTo(Math.round(projected), 0.6)
   }
 
-  // Wheel: only horizontal input steers the carousel; vertical scroll always
-  // passes through untouched so the page itself never gets stuck.
+  // Wheel input steers the carousel in either direction. This supports both
+  // horizontal trackpads and ordinary vertical mouse wheels.
   const onWheel = (e) => {
     if (reduced) return
     const horizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY)
-    if (!horizontal) return
     e.preventDefault()
     gsap.killTweensOf(posRef)
-    const nextPos = posRef.current + e.deltaX / 300
+    const wheelDelta = horizontal ? e.deltaX : e.deltaY
+    const nextPos = posRef.current + wheelDelta / 300
     posRef.current = nextPos
     setPosition(nextPos)
     clearTimeout(settleTimeout.current)
