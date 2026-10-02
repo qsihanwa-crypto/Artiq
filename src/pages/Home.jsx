@@ -15,7 +15,6 @@ import { useReducedMotion } from '../hooks/useReducedMotion'
 import { useIsTouchDevice } from '../hooks/useIsTouchDevice'
 import { useSettings } from '../context/SettingsContext'
 import { useArtworks } from '../hooks/useArtwork'
-import { artworks } from '../data/artworks'
 import artistPortrait from '../assets/images/dennis-liew.jpg'
 
 // Decorative artwork cluster behind the hero headline — the page's thesis is
@@ -52,6 +51,7 @@ const HERO_FRAGMENT_CONFIG = [
 
 export default function Home() {
   const settings = useSettings()
+  const { artworks } = useArtworks()
   const { artworks: featuredArtworks } = useArtworks({ featured: true })
 
   const pick = (id) => artworks.find((artwork) => artwork.id === id)
