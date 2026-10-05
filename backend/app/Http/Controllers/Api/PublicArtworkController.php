@@ -12,9 +12,7 @@ class PublicArtworkController extends Controller
     // GET /api/artworks?featured=1    — just the Home page's featured picks
     public function index(Request $request)
     {
-        $query = Artwork::with('images')->where(function ($query) {
-            $query->where('available', true)->orWhere('status', 'exhibition');
-        });
+        $query = Artwork::with('images');
         if ($request->boolean('featured')) {
             $query->where('featured', true);
         }
