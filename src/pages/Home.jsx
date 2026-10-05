@@ -59,8 +59,7 @@ export default function Home() {
     id: art.id,
     src: art.image,
     alt: art.alt,
-    to: `/artwork/${art.id}`,
-    label: `View "${art.title}," ${art.medium}`,
+    label: art.title,
   }))
   const heroFragments = HERO_FRAGMENT_CONFIG.map((fragment) => ({ ...fragment, art: pick(fragment.slug) })).filter((fragment) => fragment.art)
   const homeContent = settings.home_content || {}

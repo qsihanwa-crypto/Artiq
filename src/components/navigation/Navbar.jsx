@@ -1,8 +1,23 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Menu, ShoppingBag, X } from 'lucide-react'
 import { NAV_LINKS, site } from '../../data/site'
+import { useCart } from '../../context/CartContext'
 import MobileMenu from './MobileMenu'
+
+function CartLink() {
+  const { count } = useCart()
+  return (
+    <NavLink
+      to="/cart"
+      aria-label={count ? `Cart, ${count} ${count === 1 ? 'item' : 'items'}` : 'Cart, empty'}
+      className="relative flex h-10 items-center gap-1.5 rounded-full px-3 text-sm font-medium text-zinc-950 transition-colors hover:bg-black/5"
+    >
+      <ShoppingBag size={18} aria-hidden="true" />
+      {count > 0 && <span aria-hidden="true">{count}</span>}
+    </NavLink>
+  )
+}
 
 function NavItem({ to, label }) {
   return (
@@ -50,6 +65,7 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-1 sm:gap-2">
+          <CartLink />
           <button
             type="button"
             onClick={() => setOpen(true)}

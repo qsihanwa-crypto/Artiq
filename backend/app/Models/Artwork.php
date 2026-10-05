@@ -11,7 +11,7 @@ class Artwork extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'slug', 'title', 'medium', 'category', 'category_label', 'dimensions',
+        'slug', 'title', 'medium', 'category', 'category_label', 'dimensions', 'year',
         'aspect', 'palette', 'description', 'features', 'price', 'available', 'status',
         'materials', 'technique', 'tags', 'alt', 'featured', 'sort_order',
     ];

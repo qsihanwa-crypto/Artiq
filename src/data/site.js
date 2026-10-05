@@ -6,6 +6,13 @@ export const site = {
   shortName: 'Dennis',
   tagline: 'Sharing my journey as an artist.',
   location: 'Malaysia',
+  currency: 'MYR',
+  // Placeholder number and message used by checkout until set in the CMS Cart & Checkout page.
+  whatsapp_number: '',
+  checkout_message: {
+    greeting: "Hi {artist_name}, I'd like to order the following:",
+    signoff: "Sent from {artist_name}'s catalogue",
+  },
   social: [
     { label: 'YouTube', href: 'https://www.youtube.com/channel/UCY226m6JyIjBozmKHeYw-dA/featured' },
     { label: 'Facebook', href: 'https://www.facebook.com/groups/2070292319937008' },

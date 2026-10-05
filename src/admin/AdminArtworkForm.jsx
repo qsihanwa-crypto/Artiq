@@ -13,7 +13,7 @@ const CATEGORY_OPTIONS = [
 ]
 const CUSTOM_CATEGORY_VALUE = '__custom__'
 const EMPTY_FORM = {
-  title: '', slug: '', medium: '', category: '', category_label: '', dimensions: '', aspect: 'portrait',
+  title: '', slug: '', medium: '', category: '', category_label: '', dimensions: '', year: '', aspect: 'landscape',
   palette: [], description: '', features: [], price: '', available: true, status: 'for_sale', materials: [], technique: '',
   tags: [], alt: '', featured: false, sort_order: 0,
 }
@@ -23,7 +23,8 @@ const FIELD_HELP = {
   medium: 'The main material or medium, such as Acrylic on canvas.',
   category: 'Choose the artwork type. The visitor-facing category label is filled automatically.',
   dimensions: 'Physical size, for example 60 x 90 cm.',
-  price: 'Price in the site currency. Enter numbers only.',
+  year: 'The year the artwork was painted.',
+  price: 'Price in MYR. Enter numbers only. Leave blank or 0 to show "Price on request".',
   alt: 'Short description of the image for screen readers and search engines.',
   aspect: 'Choose the artwork orientation so the gallery can frame it correctly.',
   sort_order: 'Lower numbers appear first when artworks are listed.',
@@ -197,17 +198,31 @@ export default function AdminArtworkForm() {
         <fieldset className="grid gap-5 border-t border-neutral-200 pt-6 sm:grid-cols-2">
           <legend className="mb-2 font-display text-2xl font-semibold text-ink">Details</legend>
           {[
-            ['title', 'Title', true], ['slug', 'Slug', false], ['medium', 'Medium', true],
-            ['dimensions', 'Dimensions', false], ['price', 'Price', true], ['alt', 'Alt text', true],
+            ['title', 'Title', true], ['medium', 'Medium', true],
+            ['dimensions', 'Size', false], ['year', 'Year', false], ['price', 'Price (MYR)', form.status === 'for_sale'],
           ].map(([field, label, required]) => (
             <label key={field} className="block text-sm text-neutral-700">
               <span>{label}<FieldHelp text={FIELD_HELP[field]} /></span>
-              <input required={required} type={field === 'price' ? 'number' : 'text'} step={field === 'price' ? '0.01' : undefined} value={form[field]} onChange={(event) => update(field, event.target.value)} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2" />
+              <input required={required} type={field === 'price' || field === 'year' ? 'number' : 'text'} step={field === 'price' ? '0.01' : undefined} min={field === 'price' ? '0' : undefined} value={form[field]} onChange={(event) => update(field, event.target.value)} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2" />
+            </label>
+          ))}
+          <label className="block text-sm text-neutral-700"><span>Status<FieldHelp text={FIELD_HELP.status} /></span><select required value={form.status} onChange={(event) => { const status = event.target.value; update('status', status); update('available', status !== 'sold') }} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2"><option value="for_sale">For sale</option><option value="exhibition">Exhibition only</option><option value="sold">Sold</option></select></label>
+        </fieldset>
+
+        <details className="border-t border-neutral-200 pt-6">
+          <summary className="cursor-pointer font-display text-2xl font-semibold text-ink">More details (optional)</summary>
+        <fieldset className="mt-5 grid gap-5 sm:grid-cols-2">
+          {[
+            ['slug', 'Slug', false], ['alt', 'Alt text', false],
+          ].map(([field, label, required]) => (
+            <label key={field} className="block text-sm text-neutral-700">
+              <span>{label}<FieldHelp text={FIELD_HELP[field]} /></span>
+              <input required={required} type="text" value={form[field]} onChange={(event) => update(field, event.target.value)} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2" />
             </label>
           ))}
           <label className="block text-sm text-neutral-700">
             <span>Category<FieldHelp text={FIELD_HELP.category} /></span>
-            <select required value={addingCategory ? CUSTOM_CATEGORY_VALUE : form.category} onChange={(event) => {
+            <select value={addingCategory ? CUSTOM_CATEGORY_VALUE : form.category} onChange={(event) => {
               if (event.target.value === CUSTOM_CATEGORY_VALUE) {
                 setAddingCategory(true)
                 return
@@ -226,20 +241,20 @@ export default function AdminArtworkForm() {
               </div>
             )}
           </label>
-          <label className="block text-sm text-neutral-700"><span>Aspect<FieldHelp text={FIELD_HELP.aspect} /></span><select required value={form.aspect} onChange={(event) => update('aspect', event.target.value)} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2"><option value="portrait">Portrait</option><option value="landscape">Landscape</option><option value="square">Square</option></select></label>
+          <label className="block text-sm text-neutral-700"><span>Aspect<FieldHelp text={FIELD_HELP.aspect} /></span><select value={form.aspect} onChange={(event) => update('aspect', event.target.value)} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2"><option value="portrait">Portrait</option><option value="landscape">Landscape</option><option value="square">Square</option></select></label>
           <label className="block text-sm text-neutral-700"><span>Sort order<FieldHelp text={FIELD_HELP.sort_order} /></span><input type="number" min="0" value={form.sort_order} onChange={(event) => update('sort_order', event.target.value)} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2" /></label>
         </fieldset>
 
         <fieldset className="space-y-5 border-t border-neutral-200 pt-6">
           <legend className="mb-2 font-display text-2xl font-semibold text-ink">Description</legend>
-          <label className="block text-sm text-neutral-700"><span>Description<FieldHelp text={FIELD_HELP.description} /></span><textarea required rows="5" value={form.description} onChange={(event) => update('description', event.target.value)} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2" /></label>
+          <label className="block text-sm text-neutral-700"><span>Description<FieldHelp text={FIELD_HELP.description} /></span><textarea rows="5" value={form.description} onChange={(event) => update('description', event.target.value)} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2" /></label>
           <label className="block text-sm text-neutral-700"><span>Technique<FieldHelp text={FIELD_HELP.technique} /></span><textarea rows="3" value={form.technique} onChange={(event) => update('technique', event.target.value)} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2" /></label>
           {ARRAY_FIELDS.map((field) => <label key={field} className="block text-sm capitalize text-neutral-700"><span>{field}<FieldHelp text={FIELD_HELP[field]} /></span><textarea rows="3" value={form[field].join('\n')} onChange={(event) => updateLines(field, event.target.value)} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2" /></label>)}
         </fieldset>
+        </details>
 
         <fieldset className="space-y-4 border-t border-neutral-200 pt-6">
-          <legend className="mb-2 font-display text-2xl font-semibold text-ink">Status and images</legend>
-            <label className="block text-sm text-neutral-700"><span>Status<FieldHelp text={FIELD_HELP.status} /></span><select required value={form.status} onChange={(event) => { const status = event.target.value; update('status', status); update('available', status !== 'sold') }} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2"><option value="for_sale">For sale</option><option value="exhibition">Exhibition only</option><option value="sold">Sold</option></select></label>
+          <legend className="mb-2 font-display text-2xl font-semibold text-ink">Images</legend>
           <label className="flex items-center gap-3 text-sm text-neutral-700"><input type="checkbox" checked={form.featured} onChange={(event) => update('featured', event.target.checked)} /> <span>Featured on Home<FieldHelp text={FIELD_HELP.featured} /></span></label>
           <div>
             <p className="text-sm font-medium text-neutral-700">Add images<FieldHelp text={FIELD_HELP.images} /></p>
@@ -288,7 +303,7 @@ export default function AdminArtworkForm() {
               ))}
             </div>
           )}
-          {images.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{images.map((image) => <div key={image.id} className="relative"><img src={`${API_URL}${image.path}`} alt="" className="aspect-square w-full rounded object-cover" /><button type="button" onClick={() => deleteImage(image)} className="absolute right-1 top-1 rounded bg-white px-2 py-1 text-xs text-red-600">Delete</button></div>)}</div>}
+          {images.length > 0 && <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">{images.map((image) => <div key={image.id} className="relative"><img src={image.path.startsWith('http') ? image.path : `${API_URL}${image.path}`} alt="" className="aspect-square w-full rounded object-cover" /><button type="button" onClick={() => deleteImage(image)} className="absolute right-1 top-1 rounded bg-white px-2 py-1 text-xs text-red-600">Delete</button></div>)}</div>}
         </fieldset>
 
         {error && <p className="text-sm text-red-600" role="alert">{error}</p>}

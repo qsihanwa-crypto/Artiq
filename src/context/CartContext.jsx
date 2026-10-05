@@ -27,6 +27,7 @@ function toLineItem(art) {
     title: art.title,
     medium: art.medium,
     dimensions: art.dimensions,
+    year: art.year,
     price: art.price,
     aspect: art.aspect,
     image: art.image,

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { adminFetch } from './api'
+import { formatPrice } from '../utils/formatPrice'
 
 function retryImage(event) {
   const image = event.currentTarget
@@ -35,7 +36,7 @@ export default function AdminArtworkList() {
       method: 'PATCH',
       body: JSON.stringify({ available: !artwork.available }),
     })
-    setArtworks((current) => current.map((item) => (item.id === updated.id ? updated : item)))
+    setArtworks((current) => current.map((item) => (item.id === updated.id ? { ...item, ...updated } : item)))
   }
 
   async function deleteArtwork(artwork) {
@@ -82,13 +83,13 @@ export default function AdminArtworkList() {
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <h2 className="truncate font-display text-lg font-semibold text-ink">{artwork.title}</h2>
-                    <p className="mt-1 text-xs uppercase tracking-[0.14em] text-neutral-500">{artwork.category}</p>
+                    <p className="mt-1 text-xs text-neutral-500">{[artwork.medium, artwork.dimensions !== 'Dimensions on request' && artwork.dimensions, artwork.year].filter(Boolean).join(' · ')}</p>
                   </div>
                   <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${artwork.status === 'exhibition' ? 'bg-amber-50 text-amber-700' : artwork.available ? 'bg-emerald-50 text-emerald-700' : 'bg-neutral-100 text-neutral-500'}`}>
                     {artwork.status === 'exhibition' ? 'Exhibition' : artwork.available ? 'For sale' : 'Sold'}
                   </span>
                 </div>
-                <p className="mt-4 font-display text-xl font-semibold text-ink">${Number(artwork.price || 0).toFixed(2)}</p>
+                <p className="mt-4 font-display text-xl font-semibold text-ink">{formatPrice(artwork.price)}</p>
                 <div className="mt-5 flex flex-wrap gap-2 border-t border-neutral-100 pt-4">
                   <Link to={`/admin/catalogue/${artwork.id}`} className="rounded-full bg-ink px-4 py-2 text-sm font-medium text-white">Edit</Link>
                   <button type="button" onClick={() => toggleAvailability(artwork)} className="rounded-full border border-neutral-300 px-4 py-2 text-sm text-neutral-700">

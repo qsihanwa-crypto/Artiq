@@ -26,7 +26,7 @@ class ArtworkController extends Controller
 
     public function store(Request $request)
     {
-        $validated = $this->validated($request);
+        $validated = $this->withDefaults($this->validated($request), true);
         $validated['slug'] = $this->uniqueSlug($validated['slug'] ?? $validated['title']);
         $artwork = Artwork::create($validated);
         $this->attachUploadedImages($request, $artwork);
@@ -36,7 +36,7 @@ class ArtworkController extends Controller
     public function update(Request $request, $id)
     {
         $artwork = Artwork::findOrFail($id);
-        $validated = $this->validated($request, $id);
+        $validated = $this->withDefaults($this->validated($request, $id), false);
         $validated['slug'] = $this->uniqueSlug($validated['slug'] ?? $validated['title'], $id);
         $artwork->update($validated);
         $this->attachUploadedImages($request, $artwork);
@@ -63,6 +63,7 @@ class ArtworkController extends Controller
     public function toggleAvailability(Request $request, $id)
     {
         $data = $request->validate(['available' => 'required|boolean']);
+        $data['status'] = $data['available'] ? 'for_sale' : 'sold';
         $artwork = Artwork::findOrFail($id);
         $artwork->update($data);
         return response()->json($artwork);
@@ -94,20 +95,21 @@ class ArtworkController extends Controller
             'title' => 'required|string|max:255',
             'slug' => 'nullable|string|max:255',
             'medium' => 'required|string|max:255',
-            'category' => 'required|string|max:100',
-            'category_label' => 'required|string|max:100',
+            'category' => 'nullable|string|max:100',
+            'category_label' => 'nullable|string|max:100',
             'dimensions' => 'nullable|string|max:255',
-            'aspect' => 'required|in:portrait,landscape,square',
+            'year' => 'nullable|integer|min:1000|max:2100',
+            'aspect' => 'nullable|in:portrait,landscape,square',
             'palette' => 'nullable|array',
-            'description' => 'required|string',
+            'description' => 'nullable|string',
             'features' => 'nullable|array',
-            'price' => 'required|numeric|min:0',
+            'price' => 'nullable|numeric|min:0',
             'available' => 'boolean',
             'status' => 'required|in:for_sale,exhibition,sold',
             'materials' => 'nullable|array',
             'technique' => 'nullable|string',
             'tags' => 'nullable|array',
-            'alt' => 'required|string|max:255',
+            'alt' => 'nullable|string|max:255',
             'featured' => 'boolean',
             'sort_order' => 'nullable|integer',
             'images' => 'nullable|array',
@@ -118,6 +120,32 @@ class ArtworkController extends Controller
             'image_urls.*' => 'required|url|max:2048',
             'image_url' => 'nullable|url|max:2048',
         ]);
+    }
+
+    // Columns that are NOT NULL in the schema but optional in the form.
+    private function withDefaults(array $validated, bool $creating): array
+    {
+        $defaults = [
+            'category' => 'other',
+            'category_label' => 'Other',
+            'aspect' => 'landscape',
+            'description' => '',
+            'price' => 0,
+            'alt' => $validated['title'] ?? '',
+        ];
+
+        foreach ($defaults as $key => $default) {
+            if (($validated[$key] ?? null) !== null && $validated[$key] !== '') {
+                continue;
+            }
+            if ($creating) {
+                $validated[$key] = $default;
+            } else {
+                unset($validated[$key]);
+            }
+        }
+
+        return $validated;
     }
 
     private function uniqueSlug(string $base, ?int $ignoreId = null): string

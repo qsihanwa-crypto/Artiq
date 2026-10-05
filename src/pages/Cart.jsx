@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ShoppingBag, Trash2 } from 'lucide-react'
 import { useCart } from '../context/CartContext'
+import { artworkMeta } from '../components/artwork/ArtworkCard'
 import { useSettings } from '../context/SettingsContext'
 import { formatPrice } from '../utils/formatPrice'
 import { buildOrderMessage, buildWhatsappUrl } from '../utils/whatsappOrder'
@@ -126,14 +127,9 @@ export default function Cart() {
                     <img src={item.image} alt={item.alt} className="h-full w-full object-cover" />
                   </div>
                   <div className="min-w-0 flex-1">
-                    <Link
-                      to={`/artwork/${item.id}`}
-                      className="font-display text-base font-medium text-ink hover:underline"
-                    >
-                      {item.title}
-                    </Link>
+                    <p className="font-display text-base font-medium text-ink">{item.title}</p>
                     <p className="mt-1 text-sm text-neutral-500">
-                      {item.medium} · {item.dimensions}
+                      {artworkMeta(item)}
                     </p>
                   </div>
                   <div className="flex flex-col items-end gap-2">

@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { ArrowLeft, ArrowRight } from 'lucide-react'
 import gsap from 'gsap'
 import Button from '../buttons/Button'
 import { useReducedMotion } from '../../hooks/useReducedMotion'
+import { artworkMeta, artworkPrice } from '../artwork/ArtworkCard'
 
 const VISIBLE_RANGE = 3 // items further than this from center are hidden for performance
 
@@ -114,11 +114,12 @@ export default function Carousel3D({ artworks }) {
     const art = artworks[activeIndex]
     return (
       <div className="mx-auto max-w-xl text-center">
-        <Link to={`/artwork/${art.id}`} data-cursor="view" className="block overflow-hidden rounded-2xl bg-neutral-100">
+        <div className="block overflow-hidden rounded-2xl bg-neutral-100">
           <img src={art.image} alt={art.alt} className="aspect-[4/5] w-full object-cover" />
-        </Link>
+        </div>
         <p className="mt-4 font-display text-lg font-medium text-zinc-950">{art.title}</p>
-        <p className="text-sm text-zinc-500">{art.medium}</p>
+        <p className="text-sm text-zinc-500">{artworkMeta(art)}</p>
+        <p className="mt-1 text-sm font-medium text-zinc-950">{artworkPrice(art)}</p>
         <CarouselControls onPrev={prev} onNext={next} index={activeIndex} total={n} />
       </div>
     )
@@ -153,17 +154,11 @@ export default function Carousel3D({ artworks }) {
           const isActive = i === activeIndex
 
           return (
-            <Link
+            <div
               key={art.id}
-              to={`/artwork/${art.id}`}
-              data-cursor={isActive ? 'view' : undefined}
-              tabIndex={isActive ? 0 : -1}
               aria-hidden={!isActive}
-              onClick={(e) => {
-                if (!isActive) {
-                  e.preventDefault()
-                  goTo(i)
-                }
+              onClick={() => {
+                if (!isActive) goTo(i)
               }}
               className="absolute left-1/2 top-1/2 block w-[220px] overflow-hidden rounded-2xl bg-neutral-100 shadow-[0_20px_60px_rgba(10,10,10,0.12)] sm:w-[300px]"
               style={{
@@ -174,14 +169,15 @@ export default function Carousel3D({ artworks }) {
               }}
             >
               <img src={art.image} alt={art.alt} loading={absDelta <= 1 ? 'eager' : 'lazy'} className="aspect-[4/5] w-full object-cover" draggable={false} />
-            </Link>
+            </div>
           )
         })}
       </div>
 
       <div className="mt-6 text-center">
         <p className="font-display text-lg font-medium text-zinc-950">{artworks[activeIndex].title}</p>
-        <p className="text-sm text-zinc-500">{artworks[activeIndex].medium}</p>
+        <p className="text-sm text-zinc-500">{artworkMeta(artworks[activeIndex])}</p>
+        <p className="mt-1 text-sm font-medium text-zinc-950">{artworkPrice(artworks[activeIndex])}</p>
       </div>
 
       <CarouselControls onPrev={prev} onNext={next} index={activeIndex} total={n} />

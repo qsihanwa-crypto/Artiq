@@ -6,7 +6,6 @@ import CustomCursor from './components/common/CustomCursor'
 import Home from './pages/Home'
 import About from './pages/About'
 import Catalogue from './pages/Catalogue'
-import ArtworkDetails from './pages/ArtworkDetails'
 import Cart from './pages/Cart'
 import AdminLogin from './admin/AdminLogin'
 import AdminLayout from './admin/AdminLayout'
@@ -50,7 +49,8 @@ export default function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/catalogue" element={<Catalogue />} />
-          <Route path="/artwork/:id" element={<ArtworkDetails />} />
+          {/* Artwork detail pages are shelved; old links go back to the catalogue. */}
+          <Route path="/artwork/:id" element={<Navigate to="/catalogue" replace />} />
           <Route path="/cart" element={<Cart />} />
           {/* /donate is retired — send it and any stale link home. */}
           <Route path="*" element={<Navigate to="/" replace />} />
