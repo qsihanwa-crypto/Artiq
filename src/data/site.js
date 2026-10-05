@@ -32,6 +32,23 @@ export const site = {
       'My mother, Patricia, is my pillar of strength and encouragement. It is because of her that I am able to continue my passion in painting.',
     ],
   },
+
+  about_content: {
+    heading: 'Meet Dennis',
+    intro: 'Hello and welcome to my site! I am Dennis Liew, an artist based in Malaysia.',
+    storyTitle: 'My journey',
+    storyParagraphs: [
+      'I have held various exhibitions in Malaysia and have sold art pieces to many fans and clients. I have also held live-art painting demonstrations and taught art classes organised by Gamuda Land.',
+      'My mother, Patricia, is my pillar of strength and encouragement. It is because of her that I am able to continue my passion in painting. She helps with the administrative work that I am unable to do yet due to Asperger syndrome.',
+    ],
+    closing: 'With the continuous support from you and all the fans of my art, I will learn to overcome the challenges ahead. Thank you from the bottom of my heart.',
+    press: [
+      { year: '2017', outlet: 'New Straits Times', title: "Art and Asperger's", href: 'https://www.nst.com.my/lifestyle/sunday-vibes/2017/12/318092/art-and-aspergers' },
+      { year: '2018', outlet: 'The Star', title: 'Artist with Asperger syndrome brings beauty to the canvas', href: 'https://www.thestar.com.my/lifestyle/people/2018/02/06/artist-with-asperger-syndrome-brings-beauty-to-the-canvas' },
+      { year: '2019', outlet: 'New Straits Times', title: 'A remarkable artist', href: 'https://www.nst.com.my/lifestyle/sunday-vibes/2019/01/455097/remarkable-artist' },
+      { year: '2021', outlet: 'New Straits Times', title: "Visual artist with Asperger's dreamy artworks offers hope during difficult times", href: 'https://www.nst.com.my/lifestyle/sunday-vibes/2021/01/656008/visual-artist-aspergers-dreamy-artworks-offers-hope-during' },
+    ],
+  },
 }
 
 export const NAV_LINKS = [

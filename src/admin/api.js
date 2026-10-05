@@ -10,6 +10,7 @@ export async function adminFetch(path, options = {}) {
   const res = await fetch(`${API_URL}/api/admin${path}`, {
     ...options,
     headers: {
+      Accept: 'application/json',
       ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...authHeaders(),
       ...options.headers,
@@ -43,7 +44,7 @@ export async function adminFetch(path, options = {}) {
 export async function login(email, password) {
   const res = await fetch(`${API_URL}/api/admin/login`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, password }),
   })
 

@@ -9,7 +9,13 @@ import Button from '../components/buttons/Button'
 import WavyLine from '../components/common/WavyLine'
 import { revealOnScroll } from '../animations/scrollAnimations'
 import { useReducedMotion } from '../hooks/useReducedMotion'
+import { useSettings } from '../context/SettingsContext'
 import { site } from '../data/site'
+
+function useAboutContent() {
+  const settings = useSettings()
+  return { ...site.about_content, ...(settings.about_content || {}) }
+}
 
 export default function About() {
   return (
@@ -35,15 +41,16 @@ function useReveal() {
 }
 
 function MeetSection() {
+  const content = useAboutContent()
   return (
     <section className="px-6 pb-20 sm:px-10">
       <div className="mx-auto max-w-4xl text-center">
         <span className="text-xs font-semibold uppercase tracking-[0.2em] text-zinc-500">About</span>
         <h1 className="mt-4 font-display text-5xl font-semibold tracking-tight text-zinc-950 sm:text-6xl md:text-7xl">
-          Meet Dennis
+          {content.heading}
         </h1>
         <p className="mx-auto mt-6 max-w-xl text-lg text-zinc-600">
-          Hello and welcome to my site! I am Dennis Liew, an artist based in Malaysia.
+          {content.intro}
         </p>
       </div>
       <div className="mx-auto mt-14 max-w-3xl overflow-hidden rounded-3xl bg-neutral-100">
@@ -59,22 +66,16 @@ function MeetSection() {
 
 function StorySection() {
   const ref = useReveal()
+  const content = useAboutContent()
 
   return (
     <section ref={ref} className="px-6 py-20 sm:px-10">
       <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-10 md:grid-cols-2">
         <div data-reveal className="flex flex-col gap-6 text-lg leading-relaxed text-zinc-600">
-          <SectionHeading kicker="Story" title="My journey" />
-          <p>
-            I have held various exhibitions in Malaysia and have sold art pieces to many fans and
-            clients. I have also held live-art painting demonstrations and taught art classes
-            organised by Gamuda Land.
-          </p>
-          <p>
-            My mother, Patricia, is my pillar of strength and encouragement. It is because of her that
-            I am able to continue my passion in painting. She helps with the administrative work that I
-            am unable to do yet due to Asperger syndrome.
-          </p>
+          <SectionHeading kicker="Story" title={content.storyTitle} />
+          {content.storyParagraphs.map((paragraph, index) => (
+            <p key={index}>{paragraph}</p>
+          ))}
         </div>
         <div data-reveal className="overflow-hidden rounded-3xl bg-neutral-100">
           <img
@@ -90,13 +91,14 @@ function StorySection() {
 
 function PressSection() {
   const ref = useReveal()
+  const content = useAboutContent()
 
   return (
     <section ref={ref} className="px-6 py-20 sm:px-10">
       <div className="mx-auto max-w-5xl">
         <SectionHeading align="center" kicker="In the media" title="As featured in" className="mx-auto" />
         <ul className="mt-14 grid grid-cols-1 gap-4 sm:grid-cols-2">
-          {site.press.map((item) => (
+          {content.press.map((item) => (
             <li key={item.href} data-reveal>
               <a
                 href={item.href}
@@ -126,13 +128,14 @@ function PressSection() {
 }
 
 function ClosingStatement() {
+  const content = useAboutContent()
   return (
     <section className="px-6 py-28 sm:px-10">
       <div className="relative mx-auto max-w-3xl text-center">
         <WavyLine variant="horizontal" className="pointer-events-none absolute -top-10 left-1/2 h-16 w-64 -translate-x-1/2" opacity={0.2} />
         <AnimatedText
           as="p"
-          text="With the continuous support from you and all the fans of my art, I will learn to overcome the challenges ahead. Thank you from the bottom of my heart."
+          text={content.closing}
           className="font-display text-3xl font-medium leading-snug text-zinc-950 sm:text-4xl"
         />
         <div className="mt-10 flex justify-center">
