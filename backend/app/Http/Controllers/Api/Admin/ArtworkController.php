@@ -29,6 +29,10 @@ class ArtworkController extends Controller
         $validated = $this->withDefaults($this->validated($request), true);
         $validated['slug'] = $this->uniqueSlug($validated['slug'] ?? $validated['title']);
         $artwork = Artwork::create($validated);
+        if (array_key_exists('year', $validated)) {
+            $artwork->year = $validated['year'];
+            $artwork->save();
+        }
         $this->attachUploadedImages($request, $artwork);
         return response()->json($artwork->load('images'), 201);
     }
@@ -39,6 +43,10 @@ class ArtworkController extends Controller
         $validated = $this->withDefaults($this->validated($request, $id), false);
         $validated['slug'] = $this->uniqueSlug($validated['slug'] ?? $validated['title'], $id);
         $artwork->update($validated);
+        if (array_key_exists('year', $validated)) {
+            $artwork->year = $validated['year'];
+            $artwork->save();
+        }
         $this->attachUploadedImages($request, $artwork);
         return response()->json($artwork->load('images'));
     }
