@@ -46,7 +46,7 @@ export function useArtworks({ featured = false } = {}) {
   }, [featured])
 
   const localFallback = featured ? fallbackArtworks.slice(0, 6) : fallbackArtworks
-  const artworks = remoteArtworks?.length ? remoteArtworks : localFallback
+  const artworks = remoteArtworks ?? localFallback
 
   return { artworks, loading: false, error: null }
 }

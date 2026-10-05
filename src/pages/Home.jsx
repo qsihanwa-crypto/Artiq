@@ -24,26 +24,26 @@ import artistPortrait from '../assets/images/dennis-liew.jpg'
 const ASPECT_CLASS = { portrait: 'aspect-[4/5]', landscape: 'aspect-[5/4]', square: 'aspect-square' }
 const HERO_FRAGMENT_CONFIG = [
   {
-    artId: '8',
+    slug: 'lake-wanaka-at-sunrise',
     depth: 1,
     className:
       'w-[36vw] right-[-10%] top-[-1%] -rotate-6 ' +
       'sm:w-[24vw] sm:max-w-[300px] sm:right-[3%] sm:top-[15%] sm:-rotate-3',
   },
   {
-    artId: '4',
+    slug: 'yellow-irises-by-the-stream',
     depth: 0.45,
     className: 'hidden sm:block sm:w-[12vw] sm:max-w-[132px] sm:right-[27%] sm:top-[7%] sm:rotate-6',
   },
   {
-    artId: '7',
+    slug: 'light-of-hope',
     depth: 0.7,
     className:
       'w-[30vw] left-[-9%] bottom-[-4%] rotate-3 ' +
       'sm:w-[16vw] sm:max-w-[196px] sm:left-auto sm:right-[9%] sm:bottom-[6%] sm:rotate-2',
   },
   {
-    artId: '1',
+    slug: 'fancy-garden',
     depth: 0.35,
     className: 'hidden sm:block sm:w-[11vw] sm:max-w-[124px] sm:left-[-3%] sm:bottom-[3%] sm:-rotate-6',
   },
@@ -54,7 +54,7 @@ export default function Home() {
   const { artworks } = useArtworks()
   const { artworks: featuredArtworks } = useArtworks({ featured: true })
 
-  const pick = (id) => artworks.find((artwork) => artwork.id === id)
+  const pick = (slug) => artworks.find((artwork) => artwork.slug === slug)
   const spiralItems = artworks.map((art) => ({
     id: art.id,
     src: art.image,
@@ -62,7 +62,7 @@ export default function Home() {
     to: `/artwork/${art.id}`,
     label: `View "${art.title}," ${art.medium}`,
   }))
-  const heroFragments = HERO_FRAGMENT_CONFIG.map((fragment) => ({ ...fragment, art: pick(fragment.artId) })).filter((fragment) => fragment.art)
+  const heroFragments = HERO_FRAGMENT_CONFIG.map((fragment) => ({ ...fragment, art: pick(fragment.slug) })).filter((fragment) => fragment.art)
   const homeContent = settings.home_content || {}
   const heroLines = homeContent.heroLines || ['EVERY PIECE', 'MADE', 'BY HAND.']
   const fill = (text = '') => text.replace('{artist_name}', settings.artist_name || '').replace('{location}', settings.location || '')
@@ -304,12 +304,11 @@ function ArtistIntro({ portrait, settings, content }) {
         </div>
         <div data-reveal className="flex flex-col gap-6">
           <SectionHeading kicker="The Artist" title="Meet Dennis" />
-          <p className="text-lg leading-relaxed text-zinc-600">
-            {content.artistIntroParagraphs?.[0]}
-          </p>
-          <p className="text-lg leading-relaxed text-zinc-600">
-            {content.artistIntroParagraphs?.[1]}
-          </p>
+          {(content.artistIntroParagraphs || []).map((paragraph, index) => (
+            <p key={index} className="text-lg leading-relaxed text-zinc-600">
+              {paragraph}
+            </p>
+          ))}
           <Button to="/about" variant="secondary" size="md" showArrow className="w-fit">
             Read more
           </Button>
@@ -320,6 +319,7 @@ function ArtistIntro({ portrait, settings, content }) {
 }
 
 function FeaturedArtwork({ artworks }) {
+  if (artworks.length === 0) return null
   return (
     <section className="px-6 py-28 sm:px-10">
       <div className="mx-auto max-w-6xl">
