@@ -30,6 +30,11 @@ class FinalizedArtworkSeeder extends Seeder
         }
 
         foreach ($manifest as $item) {
+            $medium = trim((string) ($item['medium'] ?? ''));
+            if ($medium === '') {
+                $medium = 'Acrylic on Canvas';
+            }
+
             $imageUrl = null;
             if (!empty($item['image_file'])) {
                 $imagePath = database_path('seeders/finalized-images/' . basename($item['image_file']));
@@ -56,6 +61,7 @@ class FinalizedArtworkSeeder extends Seeder
                 ['slug' => $item['slug']],
                 [
                     'title' => $item['title'],
+                    'medium' => $medium,
                     'category' => $item['category'],
                     'category_label' => $item['category_label'],
                     'dimensions' => $item['dimensions'],
