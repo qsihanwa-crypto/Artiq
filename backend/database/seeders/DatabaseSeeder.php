@@ -17,7 +17,7 @@ class DatabaseSeeder extends Seeder
         $this->call([
             AdminUserSeeder::class,
             SiteSettingSeeder::class,
-            ArtiqArtworkSeeder::class,
+            FinalizedArtworkSeeder::class,
         ]);
     }
 }

@@ -6,7 +6,7 @@ export const site = {
   shortName: 'Dennis',
   tagline: 'Sharing my journey as an artist.',
   location: 'Malaysia',
-  currency: 'MYR',
+  currency: 'RM',
   // Placeholder number and message used by checkout until set in the CMS Cart & Checkout page.
   whatsapp_number: '',
   checkout_message: {

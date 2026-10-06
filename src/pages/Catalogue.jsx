@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react'
 import SectionHeading from '../components/common/SectionHeading'
 import Carousel3D from '../components/3d/Carousel3D'
-import CatalogueFilters from '../components/gallery/CatalogueFilters'
+import CatalogueFilters, { CatalogueStatusFilters } from '../components/gallery/CatalogueFilters'
 import MasonryGallery from '../components/gallery/MasonryGallery'
 import { useArtworks } from '../hooks/useArtwork'
 
 export default function Catalogue() {
   const [category, setCategory] = useState('all')
+  const [status, setStatus] = useState('all')
   const { artworks, loading, error } = useArtworks()
   const categories = useMemo(
     () => ['all', ...new Set(artworks.map((artwork) => artwork.category))],
@@ -14,8 +15,12 @@ export default function Catalogue() {
   )
 
   const filtered = useMemo(
-    () => (category === 'all' ? artworks : artworks.filter((a) => a.category === category)),
-    [category, artworks],
+    () => artworks.filter((artwork) => {
+      const matchesCategory = category === 'all' || artwork.category === category
+      const matchesStatus = status === 'all' || artwork.status === status
+      return matchesCategory && matchesStatus
+    }),
+    [category, status, artworks],
   )
 
   return (
@@ -51,6 +56,9 @@ export default function Catalogue() {
               activeCategory={category}
               onCategoryChange={setCategory}
             />
+            <div className="mt-5">
+              <CatalogueStatusFilters activeStatus={status} onStatusChange={setStatus} />
+            </div>
           </div>
           <MasonryGallery artworks={filtered} />
         </div>

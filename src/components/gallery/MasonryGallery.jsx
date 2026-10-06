@@ -10,7 +10,7 @@ export default function MasonryGallery({ artworks }) {
   useLayoutEffect(() => {
     const el = gridRef.current
     if (!el) return
-    const items = el.querySelectorAll('[data-masonry-item]')
+    const items = el.querySelectorAll('[data-gallery-item]')
     const ctx = gsap.context(() => {
       if (reduced) {
         gsap.set(items, { opacity: 1, y: 0 })
@@ -35,9 +35,9 @@ export default function MasonryGallery({ artworks }) {
   }
 
   return (
-    <div ref={gridRef} className="columns-1 gap-6 sm:columns-2 lg:columns-3">
+    <div ref={gridRef} className="grid grid-cols-1 gap-x-6 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
       {artworks.map((art) => (
-        <div key={art.id} data-masonry-item className="mb-6 break-inside-avoid">
+        <div key={art.id} data-gallery-item>
           <ArtworkCard artwork={art} />
         </div>
       ))}

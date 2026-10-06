@@ -35,7 +35,7 @@ const FIELD_HELP = {
   materials: 'One material per line.',
   tags: 'One keyword per line to help organise related artworks.',
   available: 'Turn off when the artwork is sold or unavailable for orders.',
-  status: 'For sale adds the artwork to the cart. Exhibition only keeps it visible without selling it. Sold marks it unavailable.',
+  status: 'On sale adds the artwork to the cart. On show/exhibition purpose keeps it visible without selling it. Sold marks it unavailable.',
   featured: 'Show this artwork in the featured selection on the home page.',
   images: 'Add one or more clear JPEG, PNG, or WebP images. The first image becomes the main image.',
 }
@@ -138,6 +138,7 @@ export default function AdminArtworkForm() {
     const formData = new FormData()
 
     Object.entries(form).forEach(([field, value]) => {
+      if (field === 'images') return
       if (ARRAY_FIELDS.includes(field)) value.forEach((item) => formData.append(`${field}[]`, item))
       else if (field === 'available' || field === 'featured') formData.append(field, value ? '1' : '0')
       else if (value !== '' && value !== null && value !== undefined) formData.append(field, value)
@@ -152,11 +153,15 @@ export default function AdminArtworkForm() {
     }
 
     try {
+      let savedArtwork
       if (id) {
         formData.append('_method', 'PUT')
-        await adminFetch(`/artworks/${id}`, { method: 'POST', body: formData })
+        savedArtwork = await adminFetch(`/artworks/${id}`, { method: 'POST', body: formData })
       } else {
-        await adminFetch('/artworks', { method: 'POST', body: formData })
+        savedArtwork = await adminFetch('/artworks', { method: 'POST', body: formData })
+      }
+      if (form.year && Number(savedArtwork.year) !== Number(form.year)) {
+        throw new Error('The server did not save the year. Your entry is still here; please try saving again.')
       }
       navigate('/admin/catalogue')
     } catch (submitError) {
@@ -206,7 +211,7 @@ export default function AdminArtworkForm() {
               <input required={required} type={field === 'price' || field === 'year' ? 'number' : 'text'} step={field === 'price' ? '0.01' : undefined} min={field === 'price' ? '0' : undefined} value={form[field]} onChange={(event) => update(field, event.target.value)} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2" />
             </label>
           ))}
-          <label className="block text-sm text-neutral-700"><span>Status<FieldHelp text={FIELD_HELP.status} /></span><select required value={form.status} onChange={(event) => { const status = event.target.value; update('status', status); update('available', status !== 'sold') }} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2"><option value="for_sale">For sale</option><option value="exhibition">Exhibition only</option><option value="sold">Sold</option></select></label>
+          <label className="block text-sm text-neutral-700"><span>Status<FieldHelp text={FIELD_HELP.status} /></span><select required value={form.status} onChange={(event) => { const status = event.target.value; update('status', status); update('available', status !== 'sold') }} className="mt-2 block w-full rounded border border-neutral-300 bg-white px-3 py-2"><option value="exhibition">On show/exhibition purpose</option><option value="for_sale">On sale</option><option value="sold">Sold</option></select></label>
         </fieldset>
 
         <details className="border-t border-neutral-200 pt-6">

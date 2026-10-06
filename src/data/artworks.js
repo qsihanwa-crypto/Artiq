@@ -12,6 +12,8 @@ export const CATEGORY_LABELS = {
   gardens: 'Gardens',
   landscapes: 'Landscapes',
   places: 'Places',
+  artworks: 'Artworks',
+  music: 'Music',
   'still-life': 'Still life',
 }
 

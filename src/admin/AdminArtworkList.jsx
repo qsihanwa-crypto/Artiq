@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { adminFetch } from './api'
 import { formatPrice } from '../utils/formatPrice'
+import { artworkStatusLabel } from '../components/artwork/ArtworkCard'
 
 function retryImage(event) {
   const image = event.currentTarget
@@ -86,7 +87,7 @@ export default function AdminArtworkList() {
                     <p className="mt-1 text-xs text-neutral-500">{[artwork.medium, artwork.dimensions !== 'Dimensions on request' && artwork.dimensions, artwork.year].filter(Boolean).join(' · ')}</p>
                   </div>
                   <span className={`shrink-0 rounded-full px-2.5 py-1 text-xs font-medium ${artwork.status === 'exhibition' ? 'bg-amber-50 text-amber-700' : artwork.available ? 'bg-emerald-50 text-emerald-700' : 'bg-neutral-100 text-neutral-500'}`}>
-                    {artwork.status === 'exhibition' ? 'Exhibition' : artwork.available ? 'For sale' : 'Sold'}
+                    {artworkStatusLabel(artwork)}
                   </span>
                 </div>
                 <p className="mt-4 font-display text-xl font-semibold text-ink">{formatPrice(artwork.price)}</p>

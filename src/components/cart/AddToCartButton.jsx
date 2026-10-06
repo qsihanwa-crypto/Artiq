@@ -30,7 +30,7 @@ export default function AddToCartButton({ artwork, size = 'lg', className = '' }
 
   if (artwork.status === 'exhibition') {
     if (size === 'sm') return null
-    return <span className={`${BASE} ${SIZES[size]} border border-amber-200 text-amber-700 ${className}`}>Exhibition only</span>
+    return <span className={`${BASE} ${SIZES[size]} border border-amber-200 text-amber-700 ${className}`}>On show/exhibition purpose</span>
   }
 
   if (artwork.status === 'sold' || artwork.available === false) {
